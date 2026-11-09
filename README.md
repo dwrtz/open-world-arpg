@@ -1,27 +1,21 @@
-# Wilden
+# Wylden
 
-Wilden is the chosen game name. The repository remains `dwrtz/open-world-arpg`.
+A mobile-first, open-world mining ARPG. Carve paths through a persistent world, discover underground biomes, fight with synergistic skills, and turn rare materials into distinctive equipment.
 
-A mobile-first, persistent open-world mining action RPG with exploration, crafting in the world, equipment, build synergies, and social trade. Tower defense is explicitly out of scope.
+Craft at stations in the world, manage gear through contextual overlays, and trade with other players. Beautiful pixel-inspired art, responsive combat, and satisfying exploration define the experience.
 
-## Status
+## Design
 
-Design and architecture preparation. No engine implementation or playable build is included yet. Engine choice, visual perspective, and public licensing remain decisions to resolve.
-
-## Design constraints
-
-- An inhabitable, persistent world rather than a sequence of menu-led expeditions.
-- Crafting at locations in the world; inventory and equipment use in-world overlays rather than a separate loadout screen.
-- Mobile-first control and visual quality are primary requirements.
-- A proper game engine with a verified browser delivery path, investigating WASM and WebGPU.
-- Blender as the asset-authoring pipeline.
-- Open-source development is intended; code and asset licenses remain to be selected before reuse permissions are granted.
-
-## Repository status
-
-Public design repository: [dwrtz/open-world-arpg](https://github.com/dwrtz/open-world-arpg), on `main`. This is not yet a playable game. No open-source license has been selected; public visibility alone does not grant reuse permissions.
-
-## Design documents
-
-- [Experience architecture and mechanics](docs/experience-and-mechanics.md)
+- [Experience and mechanics](docs/experience-and-mechanics.md)
 - [Software architecture](docs/software-architecture.md)
+- [Architecture decisions](docs/decisions/README.md)
+
+## Development
+
+Currently in design. Target: a proper game engine delivering to mobile and desktop browsers through WebAssembly/WebGPU, with assets authored in Blender.
+
+The first playable slice will combine movement, mining, combat, crafting, and persistence in one polished biome. Engine and art-pipeline selection will be based on this slice's performance and feel on real phones.
+
+## License
+
+Code and asset licenses are pending. No license is granted yet.
