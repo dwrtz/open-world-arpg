@@ -1,6 +1,6 @@
-# Software architecture
+# Wilden: software architecture
 
-Status: proposed architecture, 2026-11-09. Working game title deliberately omitted pending naming. This document is a blueprint, not evidence of an implemented engine, tested performance, or deployed backend.
+Status: proposed architecture, 2026-11-09. Game name: Wilden. This document is a blueprint, not evidence of an implemented engine, tested performance, or deployed backend.
 
 ## 1. Product constraints and architectural stance
 
@@ -229,7 +229,7 @@ These are dependency gates, not a commitment to a timetable or an excuse to ship
 
 ## 13. Decisions still open
 
-- Final name and repository slug.
+- Repository slug, if a rename is desired; the current repository remains `dwrtz/open-world-arpg`.
 - Explicit perspective confirmation and visual style within the pixel-art preference.
 - Final engine/version and minimum supported browser/device matrix.
 - Pre-rendered sprites versus real-time 2.5D Blender assets.
