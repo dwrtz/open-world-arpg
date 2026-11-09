@@ -1,0 +1,27 @@
+# Local secrets and machine state
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Tool and editor caches
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+node_modules/
+target/
+dist/
+build/
+
+# Blender backups and temporary renders
+*.blend1
+*.blend2
+*.blend@
+assets/.cache/
+assets/renders/tmp/
+
+# Never commit local credentials
+*.pem
+*.key
