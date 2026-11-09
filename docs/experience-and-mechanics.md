@@ -1,8 +1,8 @@
-# Open-world mining ARPG: experience architecture and mechanics
+# Wilden: experience architecture and mechanics
 
 Status: design baseline for discussion, not an implemented game.  
 Date: 2026-11-09.  
-Name: TBD. Deepforge is the rejected prototype, not the new game's settled name.
+Name: Wilden. Deepforge is the rejected prototype, not this game's name.
 
 ## 1. Product intent and decision record
 
@@ -29,7 +29,7 @@ The user welcomed the overall persistent-world concept. The following details we
 - Active combat, material recovery after death, and retaining equipped items.
 - A world-space market board connected to social trade.
 
-Neither a shared multiplayer world nor real-time co-op has been requested. Social trade does not imply that every world must be multiplayer. Engine, art rendering technique, monetization, final title, license, and online authority model remain separate choices.
+Neither a shared multiplayer world nor real-time co-op has been requested. Social trade does not imply that every world must be multiplayer. Engine, art rendering technique, monetization, license, and online authority model remain separate choices.
 
 ## 2. Experience promise
 
@@ -292,6 +292,6 @@ Use observed playtests with real touch devices. Automated collision, persistence
 4. World ownership: personal persistent world initially, or shared multiplayer requirements.
 5. Death/recovery rules and expected challenge level.
 6. Browser/device support floor, renderer fallback, and performance targets.
-7. Final name, open-source code license, and asset license policy.
+7. Open-source code license and asset license policy.
 
 These questions should not block writing coherent architecture. Architecture must label assumptions, isolate expensive-to-reverse choices, and avoid describing a proposed feature as already accepted or working.
