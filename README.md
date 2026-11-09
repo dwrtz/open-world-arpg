@@ -1,12 +1,12 @@
-# Open-world ARPG
+# Wilden
 
-Working repository name only. The final game name is not selected.
+Wilden is the chosen game name. The repository remains `dwrtz/open-world-arpg`.
 
 A mobile-first, persistent open-world mining action RPG with exploration, crafting in the world, equipment, build synergies, and social trade. Tower defense is explicitly out of scope.
 
 ## Status
 
-Design and architecture preparation. No engine implementation or playable build is included yet. Engine choice, visual perspective, project name, and public licensing remain decisions to resolve.
+Design and architecture preparation. No engine implementation or playable build is included yet. Engine choice, visual perspective, and public licensing remain decisions to resolve.
 
 ## Design constraints
 
