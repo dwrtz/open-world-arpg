@@ -1,3 +1,10 @@
-# Wilden architecture decisions
+# Architecture decisions
 
-Record proposed choices separately from accepted decisions. Each decision should include context, alternatives, consequences, validation evidence, and status. Do not present a proposed engine, visual perspective, or license as user-approved.
+Record consequential technical choices in short numbered documents:
+
+- **Status:** proposed, accepted, or superseded.
+- **Decision:** the selected approach.
+- **Reason:** relevant requirements, alternatives, and tradeoffs.
+- **Evidence:** tests or measurements supporting the choice.
+
+Start with engine/browser support, perspective and asset pipeline, persistence, and trade authority.
