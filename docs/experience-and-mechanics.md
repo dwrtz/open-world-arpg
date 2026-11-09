@@ -1,66 +1,35 @@
-# Wylden: experience and mechanics
+# Experience and mechanics
 
-## Experience
-
-Wylden is a persistent open-world mining ARPG about discovering what lies beneath the surface and shaping a path to it. Exploration, digging, combat, and crafting reinforce one another; progression opens new routes and ways to play.
+Wylden is a persistent open-world mining ARPG about discovering what lies beneath the surface and shaping a path to it. Exploration, digging, combat, and crafting reinforce one another.
 
 **Core loop:** explore → discover → dig or fight → gather → craft and refine a build → reach somewhere new.
 
-The player chooses their own goals and session length. Tunnels, discoveries, placed stations, and character progress persist. A proposed surface settlement provides a starting point, with small underground outposts extending the player's reach.
+## An inhabited world
 
-## World and exploration
+The player moves continuously through surface regions, caves, ruins, and deeper biomes. Tunnels, discoveries, placed objects, and character progress persist. Light, sound, mineral veins, and landmarks suggest destinations without prescribing a single route.
 
-Connected surface regions, caves, ruins, and deeper biomes combine procedural geography with authored landmarks and encounters. Light, sound, ore veins, and architecture suggest destinations. Tools, hazards, routes, and bosses govern access to new areas.
+Fine-scale material cells make terrain destructible and meaningful. Material definitions govern appearance, hardness, tool requirements, drops, and selected interactions. Mining changes traversal and combat space. Responsive targeting and held input make excavation comfortable on a phone.
 
-Mining exposes spaces and changes traversal and combat sightlines. Materials have distinct appearance, sound, hardness, and rewards. A highlighted target makes excavation precise on touchscreens; held input repeats smoothly and nearby materials collect automatically. Tool upgrades improve handling, reach, mining shape, and material access.
+Regions should feel organic: irregular caverns, curved passages, gradual biome transitions, and winding deposits. Logical generation regions must not look like a grid of dungeon rooms. See [world generation](world-generation.md).
 
-Outposts offer lights, storage, a rest point, and selected crafting or traversal objects. The world should remain navigable as terrain changes, with reliable ways to recover from getting trapped.
+## Combat and progression
 
-## Combat and builds
+Deliberate real-time combat combines a basic attack, evasion, and a compact set of active skills. Weapons differ in reach, rhythm, and commitment. Enemies telegraph attacks; encounters use terrain and complementary roles.
 
-Deliberate real-time combat combines a basic attack, evasion, and a compact set of active skills. Weapons differ in reach, rhythm, and commitment. Enemies telegraph attacks clearly; encounters mix complementary roles and use terrain meaningfully.
-
-Equipment and skills create behavior-changing combinations inspired by ARPGs such as Path of Exile. For example, a cold projectile can chill a target for a heavy shattering attack. Progression should produce different tactics as well as greater power.
-
-Items have recognizable bases and modifiers. Crafting materials, consumables, equipment, and placeable objects have clear inventory roles. Generous stacking, pickup filters, readable comparisons, and favorite protection keep management comfortable on a phone.
+Equipment and skills create behavior-changing combinations inspired by ARPGs such as Path of Exile. Tools and character progression open new routes and ways to play. Items have recognizable bases and modifiers; salvage and gathered materials feed crafting.
 
 ## Crafting and trade
 
-Crafting takes place at physical stations:
+Crafting happens at physical stations such as furnaces, anvils, workbenches, and specialist altars. Interacting opens a contextual panel over the world, showing ingredients, costs, and outcomes. Inventory and equipment use overlays in the same play space.
 
-- **Furnace:** process raw materials.
-- **Workbench or anvil:** make tools, equipment, and placeable objects.
-- **Specialist altar:** improve or reroll item properties.
+An in-world market supports asynchronous player listings and purchases. The progression trust model is deferred until the economy is designed.
 
-Station interactions open contextual panels over the world. Recipes show costs and results; random modifications show possible outcomes and consumed resources. Salvaging unwanted equipment feeds further crafting.
+## Presentation and controls
 
-An in-world market provides asynchronous player listings, purchases, and proceeds collection using an in-game currency. Trade complements exploration and crafting. Tradeable progression requires authoritative item creation and ownership; the boundary between local worlds and trade-enabled characters is an early architecture decision.
+Direct pixel art provides deliberate silhouettes, palettes, and animation. Characters are assembled from reusable equipment and effect layers. Many biomes share a coherent visual language: Moss & Ember, the Opal Deep, and Roots of Giants establish initial directions.
 
-## Interface, controls, and presentation
+Mobile controls prioritize readable targets, comfortable reach, a small action cluster, safe areas, and interruption/resume. Desktop controls map to the same actions. Animation, sound, debris, and restrained camera feedback make actions tactile; darkness preserves threat readability.
 
-The world is the main play space. Inventory, equipment, crafting, maps, and trade use overlays with explicit interaction and pause rules. Nearby stations and combat targets have distinct input priorities.
+## First playable region
 
-Mobile controls prioritize comfortable reach, clear mining targets, restrained aim assistance, and a small action cluster. Support safe areas, left-handed layouts, readable text, and interruption/resume. Desktop inputs use the same actions.
-
-Pixel-inspired art is authored in Blender, with coherent silhouettes, palette, scale, and lighting. Animation, impact sounds, debris, hit feedback, and camera response make actions tactile. Darkness creates curiosity while keeping threats readable. Shake, flashes, and motion are adjustable.
-
-## First playable slice
-
-One continuous surface-and-cave region should include:
-
-- Responsive traversal and persistent mineable terrain.
-- An authored discovery, two complementary enemies, and a memorable encounter.
-- Two interacting skills or item properties.
-- One station that crafts a useful improvement.
-- Contextual inventory and reliable save/resume.
-- Representative art, animation, lighting, and sound.
-
-Evaluate it on real phones: can players aim, evade, understand threats, discover their own next goal, and feel the benefit of crafting?
-
-## Decisions to test
-
-- **Perspective:** side view is the leading proposal; confirm before producing the full asset library.
-- **Art pipeline:** Blender-rendered sprites versus real-time orthographic 2.5D.
-- **Failure:** test respawning at a safe point with equipped gear retained and recoverable material loss.
-- **Interaction:** orientation, targeting, and whether solo management overlays pause simulation.
-- **World ownership:** personal worlds and the online trade boundary; co-op requirements remain open.
+Combine responsive traversal, persistent mining, a discovery, complementary enemies, a useful crafted improvement, and two interacting skills or item properties. Test actual game-scale art, save/resume, targeting, and combat on phones before expanding content.
