@@ -83,7 +83,7 @@ def render_poses(out, q):
         B = explorers.explorer(kind, name=f"{kind}.{pose}", location=((i - 2.5) * 1.55, 0, 0), yaw=-22)
         place(B, pose)
     studio()
-    core.ortho_camera("cam", (0, 0, 1.0), 9.8, pitch_deg=5)
+    core.ortho_camera("cam", (-0.15, 0, 1.0), 10.4, pitch_deg=5)
     core.setup_render(int(2400 * q["scale"]), int(900 * q["scale"]), samples=q["samples"])
     p = core.render(out / "explorers_poses.png")
     core.post_process(p, bloom=0.25, vignette=0.2)
