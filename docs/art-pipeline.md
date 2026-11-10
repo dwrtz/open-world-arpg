@@ -1,34 +1,33 @@
-# Composable pixel art
+# Composable Blender assets
 
 ## Direction
 
-Directly authored pixel art is the primary visual pipeline. Design at native sprite resolution with coherent color clusters, readable silhouettes, intentional key poses, and consistent lighting. Blender is an optional reference or asset-construction aid.
+Blender is the primary authoring environment for side-view 3D characters and environments. Use an orthographic camera, readable silhouettes, deliberate animation poses, coherent materials, and controlled lighting. Terrain and scenery should form an organic cross section at character scale.
 
-Scale through reusable parts and composition rather than pre-rendering every possible character. Distinctive silhouettes and pose coverage still require authored art.
+Scale the asset library through reusable meshes, shared rigs, and parametric construction. Keep proportions, clothing, equipment, colors, and effects independently configurable within tested compatibility ranges.
 
 ## Asset structure
 
-- **Shared animation:** named clips, explicit per-frame durations, loop policy, origins, attachment points, and gameplay event markers.
-- **Part layers:** body, hair, clothing, armor, backpack, weapons, and accessories, with compatible body/pose families.
-- **Composition rules:** equipment slots, visibility, pose-dependent front/back ordering, attachment transforms, and allowed combinations.
-- **Material masks:** semantic palette regions for color and material variants.
-- **Effects:** independently timed layers or emitters attached to named points; define ordering and stacking for buffs, debuffs, and weapon effects.
-- **Lighting:** a separate rendering path that preserves readability and the pixel-art palette. Palette ramps, masks, and directional maps are candidates to test.
+- **Shared rigs and animation:** stable bone names, compatible body families, named clips, loop rules, attachment sockets, and gameplay event markers.
+- **Modular meshes:** bodies, hair, clothing, armor, headwear, back gear, weapons, and tools with explicit slot, fit, visibility, and attachment rules.
+- **Parameters:** constrained proportions and shape settings, plus semantic material regions for independent color and material variants.
+- **Effects:** socket-attached meshes or emitters with their own timing and stacking rules for buffs, debuffs, and weapon effects.
+- **Environment kits:** compatible terrain surfaces, roots, rocks, structures, and biome dressing with consistent scale and placement constraints.
 
-Use one animation clock to keep layers synchronized. Preserve pixel alignment and origins when swapping equipment. Cache useful compositions without baking the entire combinatorial space.
+Runtime composition should share animation state across compatible parts and preserve attachments during equipment changes. Keep gameplay collision and hit volumes separate from decorative geometry.
 
 ## Creative pipeline
 
-1. Define scale, palette, proportions, outline rules, and key poses in a compact visual guide.
-2. Author reusable layers and animation poses in one canonical editable source per asset. A pixel editor and structured scripts are both valid; choose tools based on visual quality and editability.
-3. Export atlases and versioned metadata reproducibly, with source hashes and provenance.
-4. Validate dimensions, transparency, palette, origins, timing, sockets, and event semantics.
-5. Review in a sprite workbench and in-game: randomize equipment, effects, backgrounds, and lighting; inspect transitions, clipping, foot contact, and combat readability.
+1. Define scale, proportions, silhouettes, material language, lighting, and key poses in a compact visual guide.
+2. Author canonical Blender sources and reusable construction scripts. Keep manual polish in editable sources that exports will preserve.
+3. Export engine-ready meshes, materials, skeletons, clips, and versioned metadata reproducibly, with source hashes and provenance.
+4. Validate transforms, rig compatibility, weights, sockets, clip timing, event semantics, and supported parameter ranges.
+5. Review equipment combinations, motion, effects, and lighting in an asset workbench and in-game. Check clipping, foot contact, side-view occlusion, readability, and mobile rendering cost.
 
-Manual polish belongs in the canonical source, not in files that the next export silently replaces. Keep gameplay hitboxes separate from decorative sprite bounds.
+Use the engine slice to settle export conventions, animation handling, and geometry, material, and lighting budgets.
 
 ## Current evidence and next proof
 
-The modular sprite study combines shared idle/walk poses with armor, helmets, backpacks, weapons, effects, and palette variants. It is an offline compositor: fixed equipment draw order and palette-remapped lighting do not yet prove runtime swapping, attack occlusion, or directional shading.
+The Blender studies show a side-view environment and three animated characters with independently configurable outfits, headwear, back gear, tools, and colors. The characters share a skeleton layout; equipment combinations are assembled in Blender.
 
-Next, integrate one explorer with several equipment combinations across idle, walk, mining, and attack. Validate per-frame occlusion, synchronized swapping, effect stacking, native-scale readability, and mobile rendering before scaling the asset library.
+Next, export one explorer and several equipment combinations into the client. Prove runtime assembly and swapping across idle, movement, mining, and attack, then validate attachments, effect stacking, terrain contact, and performance on phones.

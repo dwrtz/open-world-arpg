@@ -26,7 +26,7 @@ An in-world market supports asynchronous player listings and purchases. The prog
 
 ## Presentation and controls
 
-Direct pixel art provides deliberate silhouettes, palettes, and animation. Characters are assembled from reusable equipment and effect layers. Many biomes share a coherent visual language: Moss & Ember, the Opal Deep, and Roots of Giants establish initial directions.
+Orthographic side-view 3D art uses Blender-authored characters and environments with deliberate silhouettes, materials, and animation. Parametric characters combine a shared rig with reusable clothing, equipment, appearance controls, and attached effects. Many biomes share a coherent visual language: Moss & Ember, the Opal Deep, and Roots of Giants establish initial directions.
 
 Mobile controls prioritize readable targets, comfortable reach, a small action cluster, safe areas, and interruption/resume. Desktop controls map to the same actions. Animation, sound, debris, and restrained camera feedback make actions tactile; darkness preserves threat readability.
 
