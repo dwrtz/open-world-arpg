@@ -2,7 +2,7 @@
 
 ## Client and boundaries
 
-Bevy/Rust is the leading engine candidate for a WebAssembly client and WebGPU renderer. Confirm a pinned engine/plugin combination through a real-device slice. Browser renderer fallback, supported devices, and performance budgets remain to be validated.
+Target an engine client with WebAssembly delivery and WebGPU rendering. Engine selection remains provisional until an integrated side-view slice validates asset export, animation, terrain updates, and real-device performance. Browser fallback, supported devices, and performance budgets remain open.
 
 ```text
 Browser loader + versioned content
@@ -10,7 +10,7 @@ Browser loader + versioned content
       ├─ Input → gameplay commands
       ├─ Simulation: traversal, combat, mining, inventory, crafting
       ├─ World: hierarchical generation, chunks, material state, edits
-      ├─ Presentation: composed sprites, lighting, effects, audio, overlays
+      ├─ Presentation: modular 3D assets, animation, lighting, effects, audio, overlays
       └─ Persistence and network adapters
 
 Connected services: accounts, cloud saves, inventory and marketplace
@@ -22,7 +22,7 @@ Materials, recipes, skills, enemies, item bases, and modifiers are validated dat
 
 ## Terrain and persistence
 
-Store fine material cells in chunks independently of render and collision data. Apply the [hierarchical generator](world-generation.md) in world coordinates so chunk boundaries remain coherent. Bound active simulation, batch terrain edits, and rebuild only affected regions.
+Store fine material cells in chunks independently of render and collision data. Apply the [hierarchical generator](world-generation.md) in world coordinates so chunk boundaries remain coherent. Derive side-view terrain geometry from the material field, with depth for visual form and layering. Bound active simulation, batch terrain edits, and rebuild only affected render and collision regions.
 
 World records include stable IDs, seed, generator/content versions, terrain mutations, placed objects, containers, and reward state. Validate mining reach, tool capability, cooldown, and current material before producing drops.
 
@@ -30,9 +30,11 @@ Local saves use versioned IndexedDB checkpoints and a bounded journal. Save duri
 
 ## Rendering and animation
 
-Use the [composable pixel-art pipeline](art-pipeline.md). The renderer assembles synchronized layers, applies equipment ordering and attachments, and adds effects and lighting. Metadata provides explicit durations, origins, sockets, and events. Animation effects consume gameplay events; visual frames do not independently decide damage or rewards.
+Use the [composable Blender pipeline](art-pipeline.md) for 3D meshes, materials, rigs, and clips viewed through an orthographic side camera. Gameplay movement and collision follow the side-view plane; visual depth supports silhouettes, lighting, and scenery.
 
-Verify pixel alignment, atlas padding, nearest-neighbor sampling, layer synchronization, and occlusion at actual display sizes. The sprite workbench is a content-review tool; game tests establish movement, combat timing, and input feel.
+The target runtime assembles compatible character parts around a shared rig and animation state. Equipment definitions select meshes, materials, sockets, and visibility rules; effects attach independently. Gameplay events drive animation feedback, damage, and rewards without making visual frames authoritative.
+
+Validate export fidelity, equipment fit, animation transitions, occlusion, lighting, and terrain contact at actual display sizes. Measure skinning, draw calls, geometry, shadows, and effects on phones before scaling the library. Offline Blender assembly establishes the authoring approach; runtime composition is the next integration proof.
 
 ## Hosting and builds
 
@@ -53,7 +55,7 @@ Marketplace transactions need stable item identity, atomic currency/ownership tr
 
 ## Verification and sequence
 
-1. Prove engine/browser delivery and a composable character at native scale on phones.
+1. Prove engine/browser delivery, Blender asset export, and runtime character composition on phones.
 2. Integrate organic terrain, traversal, mining, crafting, and persistent edits in one region.
 3. Test world streaming, material behaviors, combat, and content variation under load.
 4. Design and validate trade-enabled progression and marketplace semantics.

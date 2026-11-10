@@ -2,20 +2,22 @@
 
 ## Direction
 
-Generate a coherent, organic world hierarchically, then represent it as fine-scale editable material cells. World maps, local views, collision, and excavation must derive from the same underlying state.
+Generate a coherent, organic side-view world hierarchically, then represent it as fine-scale editable material cells. World maps, local views, collision, and excavation must derive from the same underlying state. Render the cross section with Blender-authored 3D assets and generated terrain geometry.
 
 1. **World plan:** establish continuous surface, depth, biome, and resource fields.
 2. **Landmarks and routes:** distribute discoveries and connect them with a spatial graph containing a main structure and optional loops.
-3. **Feature constraints:** use WFC where local compatibility helps select landmark or structure types.
+3. **Feature constraints:** use WFC where local compatibility helps select structure types or constrain terrain contours.
 4. **Terrain:** shape irregular caverns, slopes, and curved passages across logical region boundaries.
 5. **Materials and scenery:** place deposits, roots, ruins, pools, and biome-specific detail in context.
 6. **Validation and repair:** check required destinations, seams, resource distribution, and traversal; repair or reject invalid results.
 
 WFC is one tool within the hierarchy. Its local compatibility rules do not establish global reachability or gameplay quality. Scene boundaries organize generation and streaming without imposing visible rectangular rooms.
 
-## Material model
+## Material and visual model
 
-Store material identity and only necessary per-cell state. Shared definitions provide hardness, required tools, solidity, drops, visual variants, and behavior flags. Derive terrain edges and visual detail from neighboring cells rather than drawing an identical square for every cell.
+Store material identity and only necessary per-cell state. Shared definitions provide hardness, required tools, solidity, drops, visual variants, and behavior flags. Fine mining cells can be smaller than WFC features or authored environment modules.
+
+Derive terrain contours and surfaces from neighboring cells. Use continuous materials, compatible edge geometry, and contextual dressing to preserve an organic appearance. Visual depth and props must agree with the playable cross section and its collision.
 
 Use bounded active regions for expensive behavior. Sand, water, combustion, and other interactions should be added selectively and measured on phones; the exact simulation rules remain to be chosen.
 
@@ -25,10 +27,10 @@ Record the seed, generator version, content version, and persistent terrain chan
 
 Player traversal needs clearance, jump/climb constraints, hazard checks, and recovery routes. Air-cell connectivity alone is insufficient.
 
-## Current evidence
+## Current evidence and next proof
 
-[World Forge](https://wylden-world-forge.dwrtz.chatgpt.site) demonstrates a finite 768×480 material world with irregular landmarks, graph-based WFC archetypes, noise-shaped caverns, curved connectors, continuous biome fields, and diggable features.
+[World Forge](https://wylden-world-forge.dwrtz.chatgpt.site) demonstrates finite material terrain, hierarchical organic generation, and session-only digging.
 
-Thirty seeded regression worlds passed determinism, graph constraints, material diversity, and air-cell connectivity checks. Overview/detail visuals and digging were checked in a browser at a phone-sized viewport.
+The Blender side-view study uses edge-compatible WFC to solve solid/air contours around a macro cave scaffold, followed by 3D terrain construction and biome dressing. Seeded checks establish local compatibility and air connectivity.
 
-Remaining proofs: character traversal, real-phone performance, persistent edits across reloads, streaming seams, and material simulation. The prototype currently has static sand/water placements and session-only edits.
+Next, integrate character traversal, collision, mining, and persistent edits with the side-view geometry. Validate real-phone performance, streaming seams, and selected material behaviors in the playable client.
