@@ -1,0 +1,5 @@
+bpy==5.2.3
+numpy
+scipy
+scikit-image
+pillow
