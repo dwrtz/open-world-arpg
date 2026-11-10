@@ -739,6 +739,9 @@ def shaft(name, top, bottom, width, coll, color="#FFE2A8", strength=1.4):
     side = V((1, 0, 0)) * width / 2
     vs = [b - side * 0.6, b + side * 0.6, t + side, t - side]
     ob = core.mesh_object(name, vs, [(0, 1, 2, 3)], coll=coll, smooth=False, recalc=False)
+    uv = ob.data.uv_layers.new(name="UVMap")
+    for li, co in zip(ob.data.polygons[0].loop_indices, ((0, 0), (1, 0), (1, 1), (0, 1))):
+        uv.data[li].uv = co
     core.set_material(ob, shaders.shaft_material(name, color, strength))
     ob.visible_shadow = False
     return ob

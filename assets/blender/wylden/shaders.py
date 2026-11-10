@@ -255,20 +255,21 @@ def water_material(name, deep="#0B2A3A", glow=None, glow_strength=0.0):
     return mat
 
 
-def shaft_material(name, color="#FFE6B0", strength=1.2, axis="Z"):
-    """Additive light shaft: emission fading along the object's local axis and edges."""
+def shaft_material(name, color="#FFE6B0", strength=1.2):
+    """Additive light shaft: emission fading toward both ends and both edges (reads the quad's UVs)."""
     mat = core.new_material(name)
     nt = mat.node_tree
     _clear(nt)
     g = Graph(nt)
     out = g.node("ShaderNodeOutputMaterial")
-    tc = g.node("ShaderNodeTexCoord")
-    sp = g.node("ShaderNodeSeparateXYZ", {"Vector": tc.outputs["Generated"]})
+    uv = g.node("ShaderNodeUVMap")
+    sp = g.node("ShaderNodeSeparateXYZ", {"Vector": uv.outputs["UV"]})
     along = g.math(
-        "MULTIPLY", g.maprange(sp.outputs[axis], 0.0, 0.85), g.maprange(sp.outputs[axis], 1.0, 0.9), clamp=True
+        "MULTIPLY", g.maprange(sp.outputs["Y"], 0.0, 0.85), g.maprange(sp.outputs["Y"], 1.0, 0.9), clamp=True
     )
-    across = sp.outputs["X"] if axis != "X" else sp.outputs["Y"]
-    edge = g.math("MULTIPLY", g.maprange(across, 0.0, 0.45), g.maprange(across, 1.0, 0.55), clamp=True)
+    across = sp.outputs["X"]
+    edge = g.math("MULTIPLY", g.maprange(across, 0.0, 0.5), g.maprange(across, 1.0, 0.5), clamp=True)
+    edge = g.math("POWER", edge, 1.6)
     fac = g.math("MULTIPLY", along, edge)
     em = g.node("ShaderNodeEmission", {"Color": core.rgba(color)})
     g.link(g.math("MULTIPLY", fac, strength), em.inputs["Strength"])
