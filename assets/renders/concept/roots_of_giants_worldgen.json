@@ -1,0 +1,239 @@
+{
+  "biome": "roots_of_giants",
+  "plan_seed": 2041,
+  "tile_m": 0.75,
+  "cell_m": 0.25,
+  "grid_tiles": [
+    20,
+    36
+  ],
+  "tile_patterns": 92,
+  "attempts": [
+    {
+      "plan_seed": 23,
+      "result": "plan rejected: could not grow west from grove"
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 214,
+      "reached_cells": 161,
+      "plan_seed": 1032,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 1
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 212,
+      "reached_cells": 161,
+      "plan_seed": 1032,
+      "attempt": 1,
+      "restarts": 0,
+      "islands_removed": 1
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 204,
+      "reached_cells": 189,
+      "plan_seed": 1032,
+      "attempt": 2,
+      "restarts": 0,
+      "islands_removed": 0
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 206,
+      "reached_cells": 161,
+      "plan_seed": 1032,
+      "attempt": 3,
+      "restarts": 0,
+      "islands_removed": 4
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 210,
+      "reached_cells": 188,
+      "plan_seed": 1032,
+      "attempt": 4,
+      "restarts": 0,
+      "islands_removed": 1
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 206,
+      "reached_cells": 192,
+      "plan_seed": 1032,
+      "attempt": 5,
+      "restarts": 0,
+      "islands_removed": 5
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 211,
+      "reached_cells": 159,
+      "plan_seed": 2041,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 3
+    },
+    {
+      "valid": true,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "trunk",
+      "standable_cells": 214,
+      "reached_cells": 214,
+      "plan_seed": 2041,
+      "attempt": 1,
+      "restarts": 0,
+      "islands_removed": 8
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "trunk",
+      "role": "surface",
+      "x": -1.95,
+      "floor": 1.44,
+      "rx": 0.0,
+      "rz": 0.0,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "hall",
+      "role": "hall",
+      "x": 6.82,
+      "floor": -4.26,
+      "rx": 3.3,
+      "rz": 1.63,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "hollow",
+      "role": "hollow",
+      "x": -0.72,
+      "floor": -5.06,
+      "rx": 2.43,
+      "rz": 1.31,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "east",
+      "role": "exit",
+      "x": 13.34,
+      "floor": -6.77,
+      "rx": 1.65,
+      "rz": 1.17,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "grove",
+      "role": "grove",
+      "x": -6.88,
+      "floor": -7.72,
+      "rx": 2.54,
+      "rz": 1.16,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "west",
+      "role": "exit",
+      "x": -12.3,
+      "floor": -7.09,
+      "rx": 1.89,
+      "rz": 1.14,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    }
+  ],
+  "routes": [
+    {
+      "a": "trunk",
+      "b": "hall",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.0,
+      "length_m": 8.4
+    },
+    {
+      "a": "hollow",
+      "b": "hall",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.02,
+      "length_m": 3.2
+    },
+    {
+      "a": "hall",
+      "b": "east",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.01,
+      "length_m": 3.7
+    },
+    {
+      "a": "grove",
+      "b": "hollow",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.05,
+      "length_m": 3.6
+    },
+    {
+      "a": "west",
+      "b": "grove",
+      "kind": "main",
+      "walk": true,
+      "radius": 0.97,
+      "length_m": 2.4
+    },
+    {
+      "a": "hollow",
+      "b": "sky",
+      "kind": "light",
+      "walk": false,
+      "radius": 0.42,
+      "length_m": 5.9
+    }
+  ],
+  "checks": {
+    "tiles_compatible": true,
+    "sealed_intact": true,
+    "valid": true,
+    "islands_removed": 8,
+    "standable_cells": 214,
+    "reached_cells": 214
+  }
+}

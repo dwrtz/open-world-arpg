@@ -1,0 +1,459 @@
+{
+  "biome": "moss_and_ember",
+  "plan_seed": 27250,
+  "tile_m": 0.75,
+  "cell_m": 0.25,
+  "grid_tiles": [
+    20,
+    36
+  ],
+  "tile_patterns": 92,
+  "attempts": [
+    {
+      "plan_seed": 7,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 1016,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 2025,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 3034,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 4043,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 5052,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 6061,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 7070,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 8079,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 9088,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 222,
+      "reached_cells": 106,
+      "plan_seed": 10097,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 209,
+      "reached_cells": 93,
+      "plan_seed": 10097,
+      "attempt": 1,
+      "restarts": 0,
+      "islands_removed": 5
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 208,
+      "reached_cells": 201,
+      "plan_seed": 10097,
+      "attempt": 2,
+      "restarts": 0,
+      "islands_removed": 10
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 218,
+      "reached_cells": 108,
+      "plan_seed": 10097,
+      "attempt": 3,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 217,
+      "reached_cells": 105,
+      "plan_seed": 10097,
+      "attempt": 4,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": false,
+      "start": "mouth",
+      "standable_cells": 203,
+      "reached_cells": 142,
+      "plan_seed": 10097,
+      "attempt": 5,
+      "restarts": 0,
+      "islands_removed": 10
+    },
+    {
+      "plan_seed": 11106,
+      "result": "plan rejected: could not grow gallery from east"
+    },
+    {
+      "plan_seed": 12115,
+      "result": "plan rejected: could not grow east from seam"
+    },
+    {
+      "plan_seed": 13124,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 14133,
+      "result": "plan rejected: could not grow east from seam"
+    },
+    {
+      "plan_seed": 15142,
+      "result": "plan rejected: could not grow east from seam"
+    },
+    {
+      "plan_seed": 16151,
+      "result": "plan rejected: could not grow gallery from east"
+    },
+    {
+      "plan_seed": 17160,
+      "result": "plan rejected: could not grow gallery from east"
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 210,
+      "reached_cells": 145,
+      "plan_seed": 18169,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 211,
+      "reached_cells": 148,
+      "plan_seed": 18169,
+      "attempt": 1,
+      "restarts": 0,
+      "islands_removed": 2
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 209,
+      "reached_cells": 139,
+      "plan_seed": 18169,
+      "attempt": 2,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 216,
+      "reached_cells": 145,
+      "plan_seed": 18169,
+      "attempt": 3,
+      "restarts": 0,
+      "islands_removed": 3
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 203,
+      "reached_cells": 146,
+      "plan_seed": 18169,
+      "attempt": 4,
+      "restarts": 0,
+      "islands_removed": 3
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 204,
+      "reached_cells": 137,
+      "plan_seed": 18169,
+      "attempt": 5,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "plan_seed": 19178,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 20187,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 197,
+      "reached_cells": 150,
+      "plan_seed": 21196,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 8
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 198,
+      "reached_cells": 150,
+      "plan_seed": 21196,
+      "attempt": 1,
+      "restarts": 0,
+      "islands_removed": 3
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 214,
+      "reached_cells": 172,
+      "plan_seed": 21196,
+      "attempt": 2,
+      "restarts": 0,
+      "islands_removed": 6
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 201,
+      "reached_cells": 153,
+      "plan_seed": 21196,
+      "attempt": 3,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": false,
+      "start": "mouth",
+      "standable_cells": 206,
+      "reached_cells": 171,
+      "plan_seed": 21196,
+      "attempt": 4,
+      "restarts": 0,
+      "islands_removed": 4
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 203,
+      "reached_cells": 150,
+      "plan_seed": 21196,
+      "attempt": 5,
+      "restarts": 0,
+      "islands_removed": 7
+    },
+    {
+      "plan_seed": 22205,
+      "result": "plan rejected: could not grow east from seam"
+    },
+    {
+      "plan_seed": 23214,
+      "result": "plan rejected: could not grow gallery from east"
+    },
+    {
+      "plan_seed": 24223,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 25232,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "plan_seed": 26241,
+      "result": "plan rejected: could not grow pocket from seam"
+    },
+    {
+      "valid": false,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 208,
+      "reached_cells": 166,
+      "plan_seed": 27250,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 2
+    },
+    {
+      "valid": true,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "mouth",
+      "standable_cells": 208,
+      "reached_cells": 196,
+      "plan_seed": 27250,
+      "attempt": 1,
+      "restarts": 0,
+      "islands_removed": 2
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "mouth",
+      "role": "surface",
+      "x": -11.61,
+      "floor": 1.42,
+      "rx": 0.0,
+      "rz": 0.0,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "forge",
+      "role": "station",
+      "x": -1.9,
+      "floor": -4.63,
+      "rx": 4.28,
+      "rz": 1.72,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "seam",
+      "role": "deposit",
+      "x": 6.5,
+      "floor": -5.21,
+      "rx": 1.99,
+      "rz": 1.24,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "east",
+      "role": "exit",
+      "x": 13.14,
+      "floor": -8.8,
+      "rx": 1.73,
+      "rz": 1.11,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "gallery",
+      "role": "passage",
+      "x": 5.53,
+      "floor": -9.17,
+      "rx": 3.35,
+      "rz": 1.03,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "pocket",
+      "role": "discovery",
+      "x": 11.92,
+      "floor": -2.89,
+      "rx": 1.52,
+      "rz": 0.96,
+      "reachable": false,
+      "air_connected": false,
+      "routed": false
+    }
+  ],
+  "routes": [
+    {
+      "a": "mouth",
+      "b": "forge",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.05,
+      "length_m": 9.0
+    },
+    {
+      "a": "forge",
+      "b": "seam",
+      "kind": "main",
+      "walk": true,
+      "radius": 0.95,
+      "length_m": 3.7
+    },
+    {
+      "a": "seam",
+      "b": "east",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.03,
+      "length_m": 5.2
+    },
+    {
+      "a": "gallery",
+      "b": "east",
+      "kind": "main",
+      "walk": true,
+      "radius": 0.95,
+      "length_m": 3.7
+    }
+  ],
+  "checks": {
+    "tiles_compatible": true,
+    "sealed_intact": true,
+    "valid": true,
+    "islands_removed": 2,
+    "standable_cells": 208,
+    "reached_cells": 196
+  }
+}

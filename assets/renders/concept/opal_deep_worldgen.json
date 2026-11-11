@@ -1,0 +1,135 @@
+{
+  "biome": "opal_deep",
+  "plan_seed": 11,
+  "tile_m": 0.75,
+  "cell_m": 0.25,
+  "grid_tiles": [
+    21,
+    36
+  ],
+  "tile_patterns": 92,
+  "attempts": [
+    {
+      "valid": true,
+      "compatible": true,
+      "sealed_intact": true,
+      "start": "west",
+      "standable_cells": 136,
+      "reached_cells": 128,
+      "plan_seed": 11,
+      "attempt": 0,
+      "restarts": 0,
+      "islands_removed": 5
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "west",
+      "role": "exit",
+      "x": -12.6,
+      "floor": 1.55,
+      "rx": 1.8,
+      "rz": 1.12,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "grotto",
+      "role": "crystal",
+      "x": -5.97,
+      "floor": -0.99,
+      "rx": 2.31,
+      "rz": 2.37,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "lake",
+      "role": "lake",
+      "x": 0.52,
+      "floor": -1.33,
+      "rx": 3.37,
+      "rz": 3.42,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "ruins",
+      "role": "ruins",
+      "x": 7.29,
+      "floor": -0.92,
+      "rx": 2.34,
+      "rz": 2.5,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "east",
+      "role": "exit",
+      "x": 12.44,
+      "floor": -1.69,
+      "rx": 1.72,
+      "rz": 1.1,
+      "reachable": true,
+      "air_connected": true,
+      "routed": true
+    },
+    {
+      "name": "cistern",
+      "role": "discovery",
+      "x": -11.11,
+      "floor": -5.51,
+      "rx": 1.86,
+      "rz": 0.89,
+      "reachable": false,
+      "air_connected": false,
+      "routed": false
+    }
+  ],
+  "routes": [
+    {
+      "a": "west",
+      "b": "grotto",
+      "kind": "main",
+      "walk": true,
+      "radius": 0.97,
+      "length_m": 4.3
+    },
+    {
+      "a": "grotto",
+      "b": "lake",
+      "kind": "main",
+      "walk": true,
+      "radius": 0.97,
+      "length_m": 2.1
+    },
+    {
+      "a": "lake",
+      "b": "ruins",
+      "kind": "main",
+      "walk": true,
+      "radius": 1.08,
+      "length_m": 2.5
+    },
+    {
+      "a": "ruins",
+      "b": "east",
+      "kind": "main",
+      "walk": true,
+      "radius": 0.98,
+      "length_m": 2.2
+    }
+  ],
+  "checks": {
+    "tiles_compatible": true,
+    "sealed_intact": true,
+    "valid": true,
+    "islands_removed": 5,
+    "standable_cells": 136,
+    "reached_cells": 128
+  }
+}
