@@ -41,6 +41,14 @@ def empty(name, location=(0, 0, 0), coll=None):
 # Mesh construction
 # ---------------------------------------------------------------------------
 
+# Segment multiplier for lofts and spheres. 1.0 for renders; exports for the
+# runtime lower it to fit phone triangle budgets.
+DETAIL = 1.0
+
+
+def _seg(n, minimum=6):
+    return max(minimum, int(round(n * DETAIL)))
+
 
 def mesh_object(name, verts, faces, coll=None, smooth=True, recalc=True):
     me = bpy.data.meshes.new(name)
@@ -94,6 +102,7 @@ def loft(name, rings, seg=16, cap=(0.6, 0.6), x_hint=(1, 0, 0), coll=None, smoot
     cap: dome depth (fraction of the smaller radius) for the start and end
     caps, or None to leave that end open.
     """
+    seg = _seg(seg)
     centers = [Vector(r[0]) for r in rings]
     frames = _frames(centers, x_hint)
     verts, faces = [], []
@@ -166,7 +175,7 @@ def shell(name, center, radii, keep, seg=32, rings=20, rot=None, coll=None):
     Used for hair, hoods, helmets and pauldrons: thicken with solidify().
     """
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=seg, v_segments=rings, radius=1.0)
+    bmesh.ops.create_uvsphere(bm, u_segments=_seg(seg, 8), v_segments=_seg(rings, 5), radius=1.0)
     doomed = [v for v in bm.verts if not keep(v.co.normalized())]
     bmesh.ops.delete(bm, geom=doomed, context="VERTS")
     m = Matrix.Translation(Vector(center))

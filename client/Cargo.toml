@@ -1,0 +1,56 @@
+[package]
+name = "wylden-client"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Wylden engine spike: runtime explorer assembly from Blender-exported glTF on Bevy (WASM/WebGPU)."
+
+[[bin]]
+name = "workbench"
+path = "src/main.rs"
+
+[dependencies]
+bevy = { version = "=0.20.1", default-features = false, features = [
+    "default_app",
+    "std",
+    "3d_bevy_render",
+    "ui_api",
+    "ui_bevy_render",
+    "ui_picking",
+    "scene",
+    "bevy_winit",
+    "bevy_window",
+    "default_font",
+    "mouse",
+    "keyboard",
+    "touch",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy = { version = "=0.20.1", default-features = false, features = ["web", "webgpu"] }
+# Pinned so the wasm-bindgen CLI used by build-web.sh matches exactly.
+wasm-bindgen = "=0.2.129"
+
+[profile.dev.package."*"]
+opt-level = 2
+
+# Size-focused release build for the browser.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = "abort"
+
+# Faster iteration build for browser checks (no LTO, no size pass).
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+debug = false
+incremental = true
+
+[profile.wasm-dev.package."*"]
+opt-level = 2

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wylden workbench</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1a1d26; color: #e6e8eb; overflow: hidden;
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #stage { position: fixed; inset: 0; }
+  canvas#bevy { width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+  #status { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center;
+    background: #1a1d26; }
+  #status[hidden] { display: none; }
+  #status .box { max-width: 34rem; display: grid; gap: 10px; }
+  #status h1 { margin: 0; font-size: 20px; }
+  #status p { margin: 0; color: #a9afba; }
+  #status code { background: #262b36; padding: 2px 6px; border-radius: 4px; }
+  #status.error h1 { color: #ffb4a6; }
+  #bar { height: 6px; background: #262b36; border-radius: 3px; overflow: hidden; }
+  #bar span { display: block; height: 100%; width: 0; background: #e3a04a; transition: width .2s; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="bevy"></canvas></div>
+<div id="status">
+  <div class="box">
+    <h1 id="title">Loading the Wylden workbench…</h1>
+    <div id="bar"><span></span></div>
+    <p id="detail">Downloading the engine.</p>
+  </div>
+</div>
+<script type="module">
+  const status = document.getElementById('status');
+  const title = document.getElementById('title');
+  const detail = document.getElementById('detail');
+  const bar = document.querySelector('#bar span');
+  const fail = (head, msg) => {
+    status.hidden = false;
+    status.classList.add('error');
+    title.textContent = head;
+    detail.textContent = msg;
+    document.getElementById('bar').hidden = true;
+  };
+  window.addEventListener('error', (e) => console.error('[workbench]', e.message));
+  window.addEventListener('unhandledrejection', (e) => console.error('[workbench]', e.reason));
+
+  async function fetchWithProgress(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+    const total = Number(res.headers.get('content-length')) || 0;
+    if (!res.body || !total) return res;
+    const reader = res.body.getReader();
+    const chunks = [];
+    let got = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      got += value.length;
+      bar.style.width = `${Math.min(100, (got / total) * 100).toFixed(0)}%`;
+      detail.textContent = `Downloading the engine: ${(got / 1048576).toFixed(1)} of ${(total / 1048576).toFixed(1)} MB.`;
+    }
+    return new Response(new Blob(chunks, { type: 'application/wasm' }), { headers: { 'content-type': 'application/wasm' } });
+  }
+
+  (async () => {
+    if (!('gpu' in navigator)) {
+      fail('WebGPU is not available here', 'This build renders with WebGPU only. Try a current Chrome, Edge or Safari, or enable WebGPU in your browser settings.');
+      return;
+    }
+    const adapter = await navigator.gpu.requestAdapter().catch(() => null);
+    if (!adapter) {
+      fail('No WebGPU adapter', 'The browser exposes WebGPU but could not provide a graphics adapter on this device.');
+      return;
+    }
+    try {
+      const t0 = performance.now();
+      const { default: init } = await import('./pkg/workbench.js');
+      const wasm = await fetchWithProgress('./pkg/workbench_bg.wasm');
+      detail.textContent = 'Starting…';
+      window.__workbench = { loadMs: 0 };
+      const started = init({ module_or_path: wasm });
+      // Bevy takes over the page once the app runs; hide the overlay after the first frames.
+      setTimeout(() => { status.hidden = true; window.__workbench.loadMs = performance.now() - t0; }, 600);
+      await started;
+    } catch (e) {
+      // Bevy's winit loop uses an exception to hand control to the browser; that one is expected.
+      const msg = String(e && e.message || e);
+      if (msg.includes('Using exceptions for control flow')) return;
+      console.error('[workbench]', e);
+      fail('The workbench failed to start', msg);
+    }
+  })();
+</script>
+</body>
+</html>

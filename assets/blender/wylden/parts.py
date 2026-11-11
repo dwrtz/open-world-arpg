@@ -149,16 +149,20 @@ def head(B, hair="crop", beard=False, brows=True):
     if hair and "hair" not in B.hidden_slots:
         hair_style(B, hair)
     if beard:
-        B.add(core.ellipsoid("beard", c + V((0.085, 0, -0.13)) * s, (0.115 * s, 0.135 * s, 0.13 * s)), "head", "hair")
-        B.add(core.ellipsoid("beard_tip", c + V((0.12, 0, -0.24)) * s, (0.07 * s, 0.08 * s, 0.07 * s)), "head", "hair")
-        for sy in (-1, 1):
-            B.add(
-                core.ellipsoid(
-                    f"moustache{sy}", c + V((0.175, sy * 0.045, -0.07)) * s, (0.035 * s, 0.06 * s, 0.025 * s)
-                ),
-                "head",
-                "hair",
-            )
+        beard_part(B)
+
+
+def beard_part(B):
+    J, s = B.J, B.s
+    c = J["head_c"]
+    B.add(core.ellipsoid("beard", c + V((0.085, 0, -0.13)) * s, (0.115 * s, 0.135 * s, 0.13 * s)), "head", "hair")
+    B.add(core.ellipsoid("beard_tip", c + V((0.12, 0, -0.24)) * s, (0.07 * s, 0.08 * s, 0.07 * s)), "head", "hair")
+    for sy in (-1, 1):
+        B.add(
+            core.ellipsoid(f"moustache{sy}", c + V((0.175, sy * 0.045, -0.07)) * s, (0.035 * s, 0.06 * s, 0.025 * s)),
+            "head",
+            "hair",
+        )
 
 
 def hair_style(B, style):

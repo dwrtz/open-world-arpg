@@ -1,0 +1,672 @@
+{
+ "body": "explorer_a",
+ "units": "metres; +Y up in glTF (Blender +Z); characters face +X",
+ "rig": "rig.glb",
+ "skeleton": [
+  "root",
+  "hips",
+  "spine",
+  "chest",
+  "neck",
+  "head",
+  "upper_arm.L",
+  "forearm.L",
+  "hand.L",
+  "upper_arm.R",
+  "forearm.R",
+  "hand.R",
+  "thigh.L",
+  "shin.L",
+  "foot.L",
+  "thigh.R",
+  "shin.R",
+  "foot.R",
+  "socket.grip.L",
+  "socket.grip.R",
+  "socket.back",
+  "socket.head",
+  "socket.hip.L"
+ ],
+ "sockets": [
+  "socket.grip.L",
+  "socket.grip.R",
+  "socket.back",
+  "socket.head",
+  "socket.hip.L"
+ ],
+ "slots": [
+  "head",
+  "hair",
+  "beard",
+  "torso",
+  "arms",
+  "hands",
+  "legs",
+  "feet",
+  "belt",
+  "over",
+  "shoulders",
+  "neck",
+  "hip",
+  "back",
+  "headwear",
+  "main_hand",
+  "off_hand"
+ ],
+ "clips": {
+  "idle": {
+   "duration": 2.0,
+   "loop": true,
+   "events": []
+  },
+  "walk": {
+   "duration": 1.0666666666666667,
+   "loop": true,
+   "events": [
+    {
+     "t": 0.0,
+     "name": "footstep"
+    },
+    {
+     "t": 0.5333333333333333,
+     "name": "footstep"
+    }
+   ]
+  },
+  "mine": {
+   "duration": 1.2,
+   "loop": true,
+   "events": [
+    {
+     "t": 0.5333333333333333,
+     "name": "impact"
+    }
+   ]
+  },
+  "slash": {
+   "duration": 1.0,
+   "loop": true,
+   "events": [
+    {
+     "t": 0.2,
+     "name": "hit"
+    }
+   ]
+  }
+ },
+ "regions": [
+  "accent",
+  "brass",
+  "canvas",
+  "cloth_a",
+  "cloth_b",
+  "cloth_c",
+  "eye",
+  "hair",
+  "leather",
+  "leather_dark",
+  "metal",
+  "paint",
+  "skin",
+  "sole",
+  "wood"
+ ],
+ "palettes": {
+  "prospector": {
+   "skin": "#E2A47C",
+   "hair": "#7C3A1C",
+   "eye": "#17131A",
+   "cloth_a": "#D38A2B",
+   "cloth_b": "#6E8B74",
+   "cloth_c": "#3D4A5E",
+   "accent": "#B8442E",
+   "canvas": "#9A9364",
+   "leather": "#8A5530",
+   "leather_dark": "#4B2F20",
+   "metal": "#A3ABB3",
+   "brass": "#C99B45",
+   "wood": "#8C5B33",
+   "paint": "#E9B23A",
+   "sole": "#2A211C",
+   "glow": "#FFC77A",
+   "lens": "#FFF1D2"
+  },
+  "pathfinder": {
+   "skin": "#9A6648",
+   "hair": "#231C1C",
+   "eye": "#120F14",
+   "cloth_a": "#2C7C78",
+   "cloth_b": "#E6D8B8",
+   "cloth_c": "#4A4E66",
+   "accent": "#C7432F",
+   "canvas": "#9A9364",
+   "leather": "#7A4E31",
+   "leather_dark": "#3F2A1F",
+   "metal": "#C3CBD3",
+   "brass": "#C9A050",
+   "wood": "#7A5232",
+   "paint": "#2C7C78",
+   "sole": "#241D19",
+   "glow": "#FFB35C",
+   "lens": "#FFF1D2"
+  },
+  "warden": {
+   "skin": "#EEC19C",
+   "hair": "#B9B2A6",
+   "eye": "#17131A",
+   "cloth_a": "#7A2232",
+   "cloth_b": "#7A2232",
+   "cloth_c": "#30364A",
+   "accent": "#A8323F",
+   "canvas": "#8C8660",
+   "leather": "#6A4329",
+   "leather_dark": "#3A271B",
+   "metal": "#AEB8C2",
+   "brass": "#D3A54B",
+   "wood": "#6E4A2C",
+   "paint": "#2F5D8C",
+   "sole": "#221C18",
+   "glow": "#FFC77A",
+   "lens": "#FFF1D2"
+  },
+  "delver": {
+   "skin": "#E2A47C",
+   "hair": "#2A2222",
+   "eye": "#17131A",
+   "cloth_a": "#6A3E7A",
+   "cloth_b": "#6E8B74",
+   "cloth_c": "#3D4A5E",
+   "accent": "#E2C25A",
+   "canvas": "#9A9364",
+   "leather": "#8A5530",
+   "leather_dark": "#4B2F20",
+   "metal": "#A3ABB3",
+   "brass": "#C99B45",
+   "wood": "#8C5B33",
+   "paint": "#6A3E7A",
+   "sole": "#2A211C",
+   "glow": "#FFC77A",
+   "lens": "#FFF1D2"
+  },
+  "moss": {
+   "skin": "#C98E68",
+   "hair": "#231C1C",
+   "eye": "#120F14",
+   "cloth_a": "#4E6E34",
+   "cloth_b": "#D9CBB0",
+   "cloth_c": "#4A4E66",
+   "accent": "#D2552A",
+   "canvas": "#9A9364",
+   "leather": "#7A4E31",
+   "leather_dark": "#3F2A1F",
+   "metal": "#C3CBD3",
+   "brass": "#C9A050",
+   "wood": "#7A5232",
+   "paint": "#2C7C78",
+   "sole": "#241D19",
+   "glow": "#FFB35C",
+   "lens": "#FFF1D2"
+  }
+ },
+ "parts": {
+  "head.base": {
+   "slot": "head",
+   "file": "parts/head.base.glb",
+   "regions": [
+    "eye",
+    "hair",
+    "skin"
+   ],
+   "effects": [],
+   "triangles": 7092
+  },
+  "hair.crop": {
+   "slot": "hair",
+   "file": "parts/hair.crop.glb",
+   "regions": [
+    "hair"
+   ],
+   "effects": [],
+   "triangles": 2420
+  },
+  "hair.tail": {
+   "slot": "hair",
+   "file": "parts/hair.tail.glb",
+   "regions": [
+    "hair"
+   ],
+   "effects": [],
+   "triangles": 2744
+  },
+  "beard.full": {
+   "slot": "beard",
+   "file": "parts/beard.full.glb",
+   "regions": [
+    "hair"
+   ],
+   "effects": [],
+   "triangles": 3120
+  },
+  "torso.work_shirt": {
+   "slot": "torso",
+   "file": "parts/torso.work_shirt.glb",
+   "regions": [
+    "cloth_b"
+   ],
+   "effects": [],
+   "triangles": 914
+  },
+  "torso.tunic": {
+   "slot": "torso",
+   "file": "parts/torso.tunic.glb",
+   "regions": [
+    "cloth_b"
+   ],
+   "effects": [],
+   "triangles": 594
+  },
+  "torso.tabard": {
+   "slot": "torso",
+   "file": "parts/torso.tabard.glb",
+   "regions": [
+    "cloth_a"
+   ],
+   "effects": [],
+   "triangles": 594
+  },
+  "arms.rolled": {
+   "slot": "arms",
+   "file": "parts/arms.rolled.glb",
+   "regions": [
+    "cloth_a",
+    "skin"
+   ],
+   "effects": [],
+   "triangles": 1296
+  },
+  "arms.long": {
+   "slot": "arms",
+   "file": "parts/arms.long.glb",
+   "regions": [
+    "cloth_b"
+   ],
+   "effects": [],
+   "triangles": 936
+  },
+  "hands.work_gloves": {
+   "slot": "hands",
+   "file": "parts/hands.work_gloves.glb",
+   "regions": [
+    "leather",
+    "leather_dark"
+   ],
+   "effects": [],
+   "triangles": 1584
+  },
+  "hands.gauntlets": {
+   "slot": "hands",
+   "file": "parts/hands.gauntlets.glb",
+   "regions": [
+    "leather",
+    "metal"
+   ],
+   "effects": [],
+   "triangles": 1584
+  },
+  "legs.trousers": {
+   "slot": "legs",
+   "file": "parts/legs.trousers.glb",
+   "regions": [
+    "cloth_c"
+   ],
+   "effects": [],
+   "triangles": 936
+  },
+  "feet.low_boots": {
+   "slot": "feet",
+   "file": "parts/feet.low_boots.glb",
+   "regions": [
+    "leather",
+    "leather_dark",
+    "sole"
+   ],
+   "effects": [],
+   "triangles": 1836
+  },
+  "feet.tall_boots": {
+   "slot": "feet",
+   "file": "parts/feet.tall_boots.glb",
+   "regions": [
+    "leather",
+    "leather_dark",
+    "sole"
+   ],
+   "effects": [],
+   "triangles": 1836
+  },
+  "feet.greaves": {
+   "slot": "feet",
+   "file": "parts/feet.greaves.glb",
+   "regions": [
+    "brass",
+    "leather_dark",
+    "metal",
+    "sole"
+   ],
+   "effects": [],
+   "triangles": 1836
+  },
+  "belt.pouch": {
+   "slot": "belt",
+   "file": "parts/belt.pouch.glb",
+   "regions": [
+    "brass",
+    "leather_dark"
+   ],
+   "effects": [],
+   "triangles": 956
+  },
+  "belt.plain": {
+   "slot": "belt",
+   "file": "parts/belt.plain.glb",
+   "regions": [
+    "brass",
+    "leather"
+   ],
+   "effects": [],
+   "triangles": 596
+  },
+  "over.apron": {
+   "slot": "over",
+   "file": "parts/over.apron.glb",
+   "regions": [
+    "leather"
+   ],
+   "effects": [],
+   "triangles": 252
+  },
+  "over.breastplate": {
+   "slot": "over",
+   "file": "parts/over.breastplate.glb",
+   "regions": [
+    "metal"
+   ],
+   "effects": [],
+   "triangles": 704
+  },
+  "shoulders.mantle": {
+   "slot": "shoulders",
+   "file": "parts/shoulders.mantle.glb",
+   "regions": [
+    "cloth_a"
+   ],
+   "effects": [],
+   "triangles": 832
+  },
+  "shoulders.pauldrons": {
+   "slot": "shoulders",
+   "file": "parts/shoulders.pauldrons.glb",
+   "regions": [
+    "brass",
+    "metal"
+   ],
+   "effects": [],
+   "triangles": 6312
+  },
+  "neck.scarf": {
+   "slot": "neck",
+   "file": "parts/neck.scarf.glb",
+   "regions": [
+    "accent"
+   ],
+   "effects": [],
+   "triangles": 788
+  },
+  "hip.satchel": {
+   "slot": "hip",
+   "file": "parts/hip.satchel.glb",
+   "regions": [
+    "leather",
+    "leather_dark"
+   ],
+   "effects": [],
+   "triangles": 828
+  },
+  "back.pack": {
+   "slot": "back",
+   "file": "parts/back.pack.glb",
+   "regions": [
+    "brass",
+    "canvas",
+    "cloth_a",
+    "glow",
+    "leather"
+   ],
+   "effects": [
+    {
+     "node": "fx.back.pack.0",
+     "kind": "point",
+     "color": [
+      1.0,
+      0.4508,
+      0.107
+     ],
+     "power_w": 60.0,
+     "radius": 0.05
+    }
+   ],
+   "triangles": 3924
+  },
+  "back.bedroll": {
+   "slot": "back",
+   "file": "parts/back.bedroll.glb",
+   "regions": [
+    "canvas",
+    "leather_dark"
+   ],
+   "effects": [],
+   "triangles": 756
+  },
+  "back.shield": {
+   "slot": "back",
+   "file": "parts/back.shield.glb",
+   "regions": [
+    "brass",
+    "leather",
+    "metal",
+    "paint"
+   ],
+   "effects": [],
+   "triangles": 6936
+  },
+  "headwear.hard_hat": {
+   "slot": "headwear",
+   "file": "parts/headwear.hard_hat.glb",
+   "regions": [
+    "brass",
+    "lens",
+    "paint"
+   ],
+   "effects": [
+    {
+     "node": "fx.headwear.hard_hat.0",
+     "kind": "spot",
+     "color": [
+      1.0,
+      0.7605,
+      0.4342
+     ],
+     "power_w": 140.0,
+     "radius": 0.03,
+     "angle": 0.8378,
+     "blend": 0.5
+    }
+   ],
+   "triangles": 3096
+  },
+  "headwear.hood": {
+   "slot": "headwear",
+   "file": "parts/headwear.hood.glb",
+   "regions": [
+    "cloth_a"
+   ],
+   "effects": [],
+   "triangles": 2060,
+   "hides": [
+    "hair"
+   ]
+  },
+  "headwear.helm": {
+   "slot": "headwear",
+   "file": "parts/headwear.helm.glb",
+   "regions": [
+    "accent",
+    "brass",
+    "metal"
+   ],
+   "effects": [],
+   "triangles": 3360,
+   "hides": [
+    "hair"
+   ]
+  },
+  "main_hand.pickaxe": {
+   "slot": "main_hand",
+   "file": "parts/main_hand.pickaxe.glb",
+   "regions": [
+    "leather",
+    "metal",
+    "wood"
+   ],
+   "effects": [],
+   "triangles": 1224
+  },
+  "main_hand.sword": {
+   "slot": "main_hand",
+   "file": "parts/main_hand.sword.glb",
+   "regions": [
+    "brass",
+    "leather_dark",
+    "metal"
+   ],
+   "effects": [],
+   "triangles": 1608
+  },
+  "main_hand.hammer": {
+   "slot": "main_hand",
+   "file": "parts/main_hand.hammer.glb",
+   "regions": [
+    "brass",
+    "metal",
+    "wood"
+   ],
+   "effects": [],
+   "triangles": 1968
+  },
+  "off_hand.lantern": {
+   "slot": "off_hand",
+   "file": "parts/off_hand.lantern.glb",
+   "regions": [
+    "brass",
+    "glow"
+   ],
+   "effects": [
+    {
+     "node": "fx.off_hand.lantern.0",
+     "kind": "point",
+     "color": [
+      1.0,
+      0.4508,
+      0.107
+     ],
+     "power_w": 60.0,
+     "radius": 0.05
+    }
+   ],
+   "triangles": 1620
+  }
+ },
+ "presets": {
+  "miner": {
+   "palette": "prospector",
+   "clip": "mine",
+   "parts": {
+    "head": "head.base",
+    "legs": "legs.trousers",
+    "hair": "hair.crop",
+    "torso": "torso.work_shirt",
+    "arms": "arms.rolled",
+    "hands": "hands.work_gloves",
+    "feet": "feet.low_boots",
+    "belt": "belt.pouch",
+    "over": "over.apron",
+    "back": "back.pack",
+    "headwear": "headwear.hard_hat",
+    "main_hand": "main_hand.pickaxe"
+   }
+  },
+  "scout": {
+   "palette": "pathfinder",
+   "clip": "walk",
+   "parts": {
+    "head": "head.base",
+    "legs": "legs.trousers",
+    "hair": "hair.crop",
+    "torso": "torso.tunic",
+    "arms": "arms.long",
+    "hands": "hands.work_gloves",
+    "feet": "feet.tall_boots",
+    "belt": "belt.plain",
+    "shoulders": "shoulders.mantle",
+    "neck": "neck.scarf",
+    "hip": "hip.satchel",
+    "back": "back.bedroll",
+    "headwear": "headwear.hood",
+    "main_hand": "main_hand.sword",
+    "off_hand": "off_hand.lantern"
+   }
+  },
+  "guard": {
+   "palette": "warden",
+   "clip": "idle",
+   "parts": {
+    "head": "head.base",
+    "legs": "legs.trousers",
+    "beard": "beard.full",
+    "torso": "torso.tabard",
+    "arms": "arms.long",
+    "hands": "hands.gauntlets",
+    "feet": "feet.greaves",
+    "belt": "belt.pouch",
+    "over": "over.breastplate",
+    "shoulders": "shoulders.pauldrons",
+    "back": "back.shield",
+    "headwear": "headwear.helm",
+    "main_hand": "main_hand.hammer"
+   }
+  },
+  "delver": {
+   "palette": "delver",
+   "clip": "slash",
+   "parts": {
+    "head": "head.base",
+    "legs": "legs.trousers",
+    "hair": "hair.tail",
+    "torso": "torso.work_shirt",
+    "arms": "arms.rolled",
+    "hands": "hands.work_gloves",
+    "feet": "feet.low_boots",
+    "belt": "belt.pouch",
+    "shoulders": "shoulders.mantle",
+    "neck": "neck.scarf",
+    "back": "back.shield",
+    "main_hand": "main_hand.sword",
+    "off_hand": "off_hand.lantern"
+   }
+  }
+ },
+ "lod": {
+  "subdivision": 1,
+  "segment_detail": 0.55
+ }
+}
