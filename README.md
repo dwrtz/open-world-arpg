@@ -14,7 +14,7 @@ Craft at stations in the world and manage gear through contextual overlays. Blen
 
 ## Development
 
-The project is in design and prototyping. Current studies cover organic material terrain, side-view Blender environments, and animated modular characters. [World Forge](https://wylden-world-forge.dwrtz.chatgpt.site) is an owner-private terrain and digging experiment.
+The project is in design and prototyping. Current studies cover organic material terrain, side-view Blender environments, and animated modular characters. [World Forge](https://wylden-world-forge.dwrtz.chatgpt.site) is an owner-private terrain and digging experiment. The [client spike](client/README.md) assembles Blender-exported explorers at runtime in Bevy 0.20 on WebAssembly/WebGPU.
 
 Target: a game engine delivering to mobile and desktop browsers through WebAssembly/WebGPU. Engine selection remains provisional pending an integrated, real-device slice. Builds run in project-controlled CI or development environments; Userland is the intended deployment platform.
 

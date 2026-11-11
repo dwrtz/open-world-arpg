@@ -90,15 +90,38 @@ struct Preset {
 
 impl Kit {
     fn options(&self, slot: &str) -> Vec<String> {
-        let mut v: Vec<String> = self.parts.iter().filter(|(_, p)| p.slot == slot).map(|(k, _)| k.clone()).collect();
+        let mut v: Vec<String> = self
+            .parts
+            .iter()
+            .filter(|(_, p)| p.slot == slot)
+            .map(|(k, _)| k.clone())
+            .collect();
         v.sort();
         v
     }
 }
 
-const CYCLE_SLOTS: [&str; 8] = ["headwear", "back", "main_hand", "off_hand", "torso", "shoulders", "feet", "hair"];
-const OPTIONAL_SLOTS: [&str; 9] =
-    ["headwear", "back", "off_hand", "shoulders", "hair", "beard", "over", "neck", "hip"];
+const CYCLE_SLOTS: [&str; 8] = [
+    "headwear",
+    "back",
+    "main_hand",
+    "off_hand",
+    "torso",
+    "shoulders",
+    "feet",
+    "hair",
+];
+const OPTIONAL_SLOTS: [&str; 9] = [
+    "headwear",
+    "back",
+    "off_hand",
+    "shoulders",
+    "hair",
+    "beard",
+    "over",
+    "neck",
+    "hip",
+];
 const CLIPS: [&str; 4] = ["idle", "walk", "mine", "slash"];
 const CROWDS: [usize; 4] = [1, 9, 25, 49];
 
@@ -152,7 +175,9 @@ fn frame_crowd(n: usize) -> (f32, f32) {
     let (cols, _) = crowd_layout(n);
     let top = ROW_SPACING * (rows as f32 - 1.0) / 2.0 + 2.1;
     let bottom = -ROW_SPACING * (rows as f32 - 1.0) / 2.0 - 0.15;
-    let height = ((top - bottom) / 0.72).max(cols as f32 * COL_SPACING * 9.0 / 16.0 + 0.6).max(3.6);
+    let height = ((top - bottom) / 0.72)
+        .max(cols as f32 * COL_SPACING * 9.0 / 16.0 + 0.6)
+        .max(3.6);
     let centre = top - height / 2.0 + 0.1;
     (height, centre)
 }
@@ -216,10 +241,17 @@ fn main() {
     let kit: Kit = serde_json::from_str(KIT_JSON).expect("kit.json");
     App::new()
         .insert_resource(ClearColor(Color::srgb(0.10, 0.11, 0.15)))
-        .insert_resource(GlobalAmbientLight { color: Color::srgb(0.75, 0.8, 1.0), brightness: 350.0, ..default() })
+        .insert_resource(GlobalAmbientLight {
+            color: Color::srgb(0.75, 0.8, 1.0),
+            brightness: 350.0,
+            ..default()
+        })
         .add_plugins(
             DefaultPlugins
-                .set(AssetPlugin { meta_check: AssetMetaCheck::Never, ..default() })
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Wylden workbench".into(),
@@ -239,7 +271,16 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(
             Update,
-            (build_graph, start_animation, update_particles, update_stats, update_slot_labels, apply_hides, dress_floors),
+            (
+                build_graph,
+                start_animation,
+                update_particles,
+                update_stats,
+                update_slot_labels,
+                apply_hides,
+                dress_floors,
+                spawn_rigs,
+            ),
         )
         .add_observer(on_instance_ready)
         .add_observer(on_cue)
@@ -254,7 +295,6 @@ fn setup(
     kit: Res<Kit>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    time: Res<Time>,
 ) {
     clips.rig = asset_server.load(format!("{KIT_DIR}/{}", kit.rig));
     commands.insert_resource(FxAssets {
@@ -275,18 +315,28 @@ fn setup(
     commands.spawn((
         Camera3d::default(),
         Projection::from(OrthographicProjection {
-            scaling_mode: ScalingMode::FixedVertical { viewport_height: frame_crowd(1).0 },
+            scaling_mode: ScalingMode::FixedVertical {
+                viewport_height: frame_crowd(1).0,
+            },
             ..OrthographicProjection::default_3d()
         }),
         Transform::from_xyz(0.0, frame_crowd(1).1 + 30.0 * 5f32.to_radians().tan(), 30.0)
             .looking_at(Vec3::new(0.0, frame_crowd(1).1, 0.0), Vec3::Y),
     ));
     commands.spawn((
-        DirectionalLight { illuminance: 7000.0, color: Color::srgb(1.0, 0.92, 0.82), ..default() },
+        DirectionalLight {
+            illuminance: 7000.0,
+            color: Color::srgb(1.0, 0.92, 0.82),
+            ..default()
+        },
         Transform::from_xyz(3.0, 5.0, 6.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
     commands.spawn((
-        DirectionalLight { illuminance: 2500.0, color: Color::srgb(0.6, 0.75, 1.0), ..default() },
+        DirectionalLight {
+            illuminance: 2500.0,
+            color: Color::srgb(0.6, 0.75, 1.0),
+            ..default()
+        },
         Transform::from_xyz(-4.0, 3.0, -5.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
     commands.insert_resource(FloorAssets {
@@ -297,7 +347,7 @@ fn setup(
             ..default()
         }),
     });
-    spawn_crowd(&mut commands, &asset_server, &kit, 1, time.elapsed_secs_f64());
+    spawn_crowd(&mut commands, &kit, 1);
     spawn_ui(&mut commands, &kit);
 }
 
@@ -306,11 +356,17 @@ fn crowd_layout(n: usize) -> (usize, usize) {
     (cols, n.div_ceil(cols))
 }
 
-fn spawn_crowd(commands: &mut Commands, asset_server: &AssetServer, kit: &Kit, n: usize, now: f64) {
+fn spawn_crowd(commands: &mut Commands, kit: &Kit, n: usize) {
     let (cols, rows) = crowd_layout(n);
     for r in 0..rows {
         let y = (r as f32 - (rows as f32 - 1.0) / 2.0) * -ROW_SPACING;
-        commands.spawn((CrowdFloor, FloorStrip { y, width: cols as f32 * COL_SPACING + 1.0 }));
+        commands.spawn((
+            CrowdFloor,
+            FloorStrip {
+                y,
+                width: cols as f32 * COL_SPACING + 1.0,
+            },
+        ));
     }
     let mut presets: Vec<&String> = kit.presets.keys().collect();
     presets.sort();
@@ -323,14 +379,22 @@ fn spawn_crowd(commands: &mut Commands, asset_server: &AssetServer, kit: &Kit, n
         let (c, r) = (i % cols, i / cols);
         let x = (c as f32 - (cols as f32 - 1.0) / 2.0) * COL_SPACING;
         let y = (r as f32 - (rows as f32 - 1.0) / 2.0) * -ROW_SPACING;
-        let name = if n == 1 { "miner" } else { presets[i % presets.len()].as_str() };
+        let name = if n == 1 {
+            "miner"
+        } else {
+            presets[i % presets.len()].as_str()
+        };
         let preset = kit.presets[name].clone();
         let palette = if n == 1 || i < presets.len() {
             preset.palette.clone()
         } else {
             palettes[(i * 7 + 3) % palettes.len()].clone()
         };
-        let clip = if n == 1 { preset.clip.clone() } else { CLIPS[(i * 5 + r) % CLIPS.len()].to_string() };
+        let clip = if n == 1 {
+            preset.clip.clone()
+        } else {
+            CLIPS[(i * 5 + r) % CLIPS.len()].to_string()
+        };
         let explorer = commands
             .spawn((
                 Explorer {
@@ -350,15 +414,7 @@ fn spawn_crowd(commands: &mut Commands, asset_server: &AssetServer, kit: &Kit, n
         if i == 0 {
             commands.entity(explorer).insert(Focus);
         }
-        // The rig carries the skeleton and the animation player; parts bind to it once it is ready.
-        let rig = commands
-            .spawn((
-                WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(format!("{KIT_DIR}/{}", kit.rig)))),
-                RigScene(explorer),
-            ))
-            .id();
-        commands.entity(explorer).add_child(rig);
-        let _ = now;
+        commands.entity(explorer).insert(NeedsRig);
         let parts: Vec<(String, String)> = preset.parts.iter().map(|(s, p)| (s.clone(), p.clone())).collect();
         commands.entity(explorer).insert(PendingEquip(parts));
     }
@@ -366,6 +422,37 @@ fn spawn_crowd(commands: &mut Commands, asset_server: &AssetServer, kit: &Kit, n
 
 #[derive(Component)]
 struct PendingEquip(Vec<(String, String)>);
+
+/// The explorer waits for rig.glb to load before its skeleton is spawned.
+#[derive(Component)]
+struct NeedsRig;
+
+/// Spawn rigs from the scene inside the already-loaded rig glTF.
+///
+/// Requesting `rig.glb#Scene0` separately from `rig.glb` can load the file twice in
+/// Bevy 0.20; the second load replaces the animation clips and drops events added to
+/// them at runtime. Taking the scene handle from the loaded `Gltf` keeps one load.
+fn spawn_rigs(
+    mut commands: Commands,
+    clips: Res<Clips>,
+    gltfs: Res<Assets<Gltf>>,
+    waiting: Query<Entity, With<NeedsRig>>,
+) {
+    if waiting.is_empty() {
+        return;
+    }
+    let Some(scene) = gltfs
+        .get(&clips.rig)
+        .and_then(|g| g.default_scene.clone().or_else(|| g.scenes.first().cloned()))
+    else {
+        return;
+    };
+    for explorer in &waiting {
+        // The rig carries the skeleton and the animation player; parts bind to it once it is ready.
+        let rig = commands.spawn((WorldAssetRoot(scene.clone()), RigScene(explorer))).id();
+        commands.entity(explorer).remove::<NeedsRig>().add_child(rig);
+    }
+}
 
 #[derive(Component)]
 struct FloorStrip {
@@ -394,12 +481,25 @@ fn dress_floors(
     }
 }
 
-fn equip(commands: &mut Commands, asset_server: &AssetServer, kit: &Kit, explorer: Entity, slot: &str, part: &str, now: f64) {
+fn equip(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    kit: &Kit,
+    explorer: Entity,
+    slot: &str,
+    part: &str,
+    now: f64,
+) {
     let meta = &kit.parts[part];
     let scene = commands
         .spawn((
             WorldAssetRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(format!("{KIT_DIR}/{}", meta.file)))),
-            PartScene { explorer, slot: slot.to_string(), part: part.to_string(), requested: now },
+            PartScene {
+                explorer,
+                slot: slot.to_string(),
+                part: part.to_string(),
+                requested: now,
+            },
             Visibility::Hidden,
         ))
         .id();
@@ -430,7 +530,9 @@ fn on_instance_ready(
     let now = time.elapsed_secs_f64();
 
     if let Ok(RigScene(explorer)) = rigs.get(root) {
-        let Ok((mut ex, pending)) = explorers.get_mut(*explorer) else { return };
+        let Ok((mut ex, pending)) = explorers.get_mut(*explorer) else {
+            return;
+        };
         for e in children.iter_descendants(root) {
             if let Ok(name) = names.get(e) {
                 ex.joints.insert(name.as_str().to_string(), e);
@@ -509,17 +611,27 @@ fn on_instance_ready(
                     .clone();
                 commands.entity(e).insert(MeshMaterial3d(handle));
             }
-            commands.entity(e).insert(PartPiece { explorer: ps.explorer, slot: ps.slot.clone() });
+            commands.entity(e).insert(PartPiece {
+                explorer: ps.explorer,
+                slot: ps.slot.clone(),
+            });
             commands.entity(ps.explorer).add_child(e);
         }
         // Effects: move fx nodes onto the matching rig joint and light them.
         if let Ok(name) = names.get(e) {
             if let Some(eff) = meta.effects.iter().find(|f| f.node == name.as_str()) {
-                let joint_name = parents.get(e).ok().and_then(|p| names.get(p.parent()).ok()).map(|n| n.as_str().to_string());
+                let joint_name = parents
+                    .get(e)
+                    .ok()
+                    .and_then(|p| names.get(p.parent()).ok())
+                    .map(|n| n.as_str().to_string());
                 if let Some(joint) = joint_name.and_then(|n| ex.joints.get(&n).copied()) {
                     let local = transforms.get(e).copied().unwrap_or_default();
                     let light = spawn_effect(&mut commands, eff, local);
-                    commands.entity(light).insert(PartPiece { explorer: ps.explorer, slot: ps.slot.clone() });
+                    commands.entity(light).insert(PartPiece {
+                        explorer: ps.explorer,
+                        slot: ps.slot.clone(),
+                    });
                     commands.entity(joint).add_child(light);
                 }
             }
@@ -554,7 +666,14 @@ fn spawn_effect(commands: &mut Commands, eff: &Effect, local: Transform) -> Enti
             .id(),
         _ => commands
             .spawn((
-                PointLight { color, intensity: lm, range: 6.0, radius: eff.radius, shadow_maps_enabled: false, ..default() },
+                PointLight {
+                    color,
+                    intensity: lm,
+                    range: 6.0,
+                    radius: eff.radius,
+                    shadow_maps_enabled: false,
+                    ..default()
+                },
                 local,
             ))
             .id(),
@@ -578,7 +697,11 @@ fn apply_hides(
         }
     }
     for (piece, mut vis) in &mut pieces {
-        let want = if hidden.contains(&(piece.explorer, piece.slot.clone())) { Visibility::Hidden } else { Visibility::Inherited };
+        let want = if hidden.contains(&(piece.explorer, piece.slot.clone())) {
+            Visibility::Hidden
+        } else {
+            Visibility::Inherited
+        };
         if *vis != want {
             *vis = want;
         }
@@ -636,9 +759,17 @@ fn start_animation(
         if ex.playing.as_deref() == Some(ex.clip.as_str()) {
             continue;
         }
-        let Some(node) = clips.nodes.get(&ex.clip).copied() else { continue };
-        let Ok((mut player, transitions)) = players.get_mut(player_e) else { continue };
-        let fade = if ex.playing.is_some() { Duration::from_millis(180) } else { Duration::ZERO };
+        let Some(node) = clips.nodes.get(&ex.clip).copied() else {
+            continue;
+        };
+        let Ok((mut player, transitions)) = players.get_mut(player_e) else {
+            continue;
+        };
+        let fade = if ex.playing.is_some() {
+            Duration::from_millis(180)
+        } else {
+            Duration::ZERO
+        };
         let looping = kit.clips.get(&ex.clip).map(|c| c.looping).unwrap_or(true);
         match transitions {
             Some(mut t) => {
@@ -653,7 +784,9 @@ fn start_animation(
                 if looping {
                     a.repeat();
                 }
-                commands.entity(player_e).insert((AnimationGraphHandle(graph.clone()), t));
+                commands
+                    .entity(player_e)
+                    .insert((AnimationGraphHandle(graph.clone()), t));
             }
         }
         ex.playing = Some(ex.clip.clone());
@@ -676,19 +809,35 @@ fn on_cue(
         info!("cue {} on {player:?}", cue.name);
     }
     stats.last_cue = format!("{} @ {:.2}s", cue.name, time.elapsed_secs());
-    let Some(ex) = explorers.iter().find(|e| e.player == Some(player)) else { return };
+    let Some(ex) = explorers.iter().find(|e| e.player == Some(player)) else {
+        return;
+    };
     let (joint, count, speed, dust) = match cue.name.as_str() {
         "footstep" => ("foot.L", 5, 0.6, true),
         _ => ("socket.grip.R", 14, 2.4, false),
     };
-    let Some(pos) = ex.joints.get(joint).and_then(|j| globals.get(*j).ok()).map(|g| g.translation()) else { return };
+    let Some(pos) = ex
+        .joints
+        .get(joint)
+        .and_then(|j| globals.get(*j).ok())
+        .map(|g| g.translation())
+    else {
+        return;
+    };
     for i in 0..count {
         let a = i as f32 / count as f32 * std::f32::consts::TAU + time.elapsed_secs();
         let v = Vec3::new(a.cos(), 0.6 + (i % 3) as f32 * 0.4, a.sin() * 0.5) * speed;
         commands.spawn((
-            Particle { velocity: v, life: if dust { 0.5 } else { 0.35 } },
+            Particle {
+                velocity: v,
+                life: if dust { 0.5 } else { 0.35 },
+            },
             Mesh3d(fx.spark_mesh.clone()),
-            MeshMaterial3d(if dust { fx.dust_mat.clone() } else { fx.spark_mat.clone() }),
+            MeshMaterial3d(if dust {
+                fx.dust_mat.clone()
+            } else {
+                fx.spark_mat.clone()
+            }),
             Transform::from_translation(pos).with_scale(Vec3::splat(if dust { 1.6 } else { 1.0 })),
         ));
     }
@@ -713,7 +862,14 @@ fn update_particles(mut commands: Commands, time: Res<Time>, mut q: Query<(Entit
 // ---------------------------------------------------------------------------
 
 fn label(text: impl Into<String>, size: f32) -> impl Bundle {
-    (Text::new(text), TextFont { font_size: FontSize::Px(size), ..default() }, TextColor(Color::srgb(0.92, 0.93, 0.95)))
+    (
+        Text::new(text),
+        TextFont {
+            font_size: FontSize::Px(size),
+            ..default()
+        },
+        TextColor(Color::srgb(0.92, 0.93, 0.95)),
+    )
 }
 
 fn button(action: UiAction, text: impl Into<String>) -> impl Bundle {
@@ -732,14 +888,26 @@ fn button(action: UiAction, text: impl Into<String>) -> impl Bundle {
 }
 
 fn row() -> Node {
-    Node { flex_wrap: FlexWrap::Wrap, column_gap: px(6), row_gap: px(6), align_items: AlignItems::Center, ..default() }
+    Node {
+        flex_wrap: FlexWrap::Wrap,
+        column_gap: px(6),
+        row_gap: px(6),
+        align_items: AlignItems::Center,
+        ..default()
+    }
 }
 
 fn spawn_ui(commands: &mut Commands, kit: &Kit) {
     let mut presets: Vec<String> = kit.presets.keys().cloned().collect();
     presets.sort();
     commands.spawn((
-        Node { position_type: PositionType::Absolute, left: px(12), top: px(10), max_width: percent(70), ..default() },
+        Node {
+            position_type: PositionType::Absolute,
+            left: px(12),
+            top: px(10),
+            max_width: percent(70),
+            ..default()
+        },
         children![(StatsText, label("loading", 13.0))],
     ));
     let panel = commands
@@ -808,7 +976,9 @@ fn on_click(
     floors: Query<Entity, With<CrowdFloor>>,
     mut stats: ResMut<Stats>,
 ) {
-    let Ok(action) = actions.get(click.entity).cloned() else { return };
+    let Ok(action) = actions.get(click.entity).cloned() else {
+        return;
+    };
     click.propagate(false);
     let now = time.elapsed_secs_f64();
     match action {
@@ -817,11 +987,13 @@ fn on_click(
                 commands.entity(e).despawn();
             }
             crowd.0 = n;
-            spawn_crowd(&mut commands, &asset_server, &kit, n, now);
+            spawn_crowd(&mut commands, &kit, n);
             let (height, centre) = frame_crowd(n);
             for (mut p, mut t) in &mut cams {
                 if let Projection::Orthographic(o) = p.as_mut() {
-                    o.scaling_mode = ScalingMode::FixedVertical { viewport_height: height };
+                    o.scaling_mode = ScalingMode::FixedVertical {
+                        viewport_height: height,
+                    };
                 }
                 *t = Transform::from_xyz(0.0, centre + 30.0 * 5f32.to_radians().tan(), 30.0)
                     .looking_at(Vec3::new(0.0, centre, 0.0), Vec3::Y);
@@ -829,7 +1001,9 @@ fn on_click(
             stats.swaps += 1;
         }
         _ => {
-            let Ok((explorer, mut ex)) = focus.single_mut() else { return };
+            let Ok((explorer, mut ex)) = focus.single_mut() else {
+                return;
+            };
             match action {
                 UiAction::Preset(name) => {
                     let preset = kit.presets[&name].clone();
@@ -854,7 +1028,11 @@ fn on_click(
                         options.push(None);
                     }
                     let current = ex.equipped.get(&slot).cloned();
-                    let i = options.iter().position(|o| *o == current).map(|i| (i + 1) % options.len()).unwrap_or(0);
+                    let i = options
+                        .iter()
+                        .position(|o| *o == current)
+                        .map(|i| (i + 1) % options.len())
+                        .unwrap_or(0);
                     match options[i].clone() {
                         Some(part) => {
                             ex.equipped.insert(slot.clone(), part.clone());
@@ -874,11 +1052,16 @@ fn on_click(
                 UiAction::Palette => {
                     let mut names: Vec<&String> = kit.palettes.keys().collect();
                     names.sort();
-                    let i = names.iter().position(|n| **n == ex.palette).map(|i| (i + 1) % names.len()).unwrap_or(0);
+                    let i = names
+                        .iter()
+                        .position(|n| **n == ex.palette)
+                        .map(|i| (i + 1) % names.len())
+                        .unwrap_or(0);
                     ex.palette = names[i].clone();
                     ex.materials.clear();
                     // Re-equip everything so materials are rebuilt from the new palette.
-                    let parts: Vec<(String, String)> = ex.equipped.iter().map(|(s, p)| (s.clone(), p.clone())).collect();
+                    let parts: Vec<(String, String)> =
+                        ex.equipped.iter().map(|(s, p)| (s.clone(), p.clone())).collect();
                     ex.pending += parts.len();
                     for (slot, part) in parts {
                         equip(&mut commands, &asset_server, &kit, explorer, &slot, &part, now);
@@ -895,7 +1078,11 @@ fn on_click(
 fn update_slot_labels(focus: Query<&Explorer, With<Focus>>, mut labels: Query<(&SlotLabel, &mut Text)>) {
     let Ok(ex) = focus.single() else { return };
     for (slot, mut text) in &mut labels {
-        let part = ex.equipped.get(&slot.0).map(|p| p.split('.').nth(1).unwrap_or(p).to_string()).unwrap_or("none".into());
+        let part = ex
+            .equipped
+            .get(&slot.0)
+            .map(|p| p.split('.').nth(1).unwrap_or(p).to_string())
+            .unwrap_or("none".into());
         let s = format!("{}: {} >", slot.0, part);
         if text.0 != s {
             text.0 = s;
@@ -914,17 +1101,32 @@ fn update_stats(
     adapter: Option<Res<RenderAdapterInfo>>,
     mut text: Query<&mut Text, With<StatsText>>,
 ) {
-    let fps = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS).and_then(|d| d.smoothed()).unwrap_or(0.0);
-    let ms = diagnostics.get(&FrameTimeDiagnosticsPlugin::FRAME_TIME).and_then(|d| d.smoothed()).unwrap_or(0.0);
+    let fps = diagnostics
+        .get(&FrameTimeDiagnosticsPlugin::FPS)
+        .and_then(|d| d.smoothed())
+        .unwrap_or(0.0);
+    let ms = diagnostics
+        .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
+        .and_then(|d| d.smoothed())
+        .unwrap_or(0.0);
     let n = explorers.iter().count();
     let tris: u32 = explorers
         .iter()
-        .map(|e| e.equipped.values().filter_map(|p| kit.parts.get(p)).map(|p| p.triangles).sum::<u32>())
+        .map(|e| {
+            e.equipped
+                .values()
+                .filter_map(|p| kit.parts.get(p))
+                .map(|p| p.triangles)
+                .sum::<u32>()
+        })
         .sum();
     let backend = adapter
         .map(|a| format!("{:?} {}", a.backend, a.name))
         .unwrap_or_else(|| "adapter unknown".into());
-    let (palette, clip) = focus.single().map(|e| (e.palette.clone(), e.clip.clone())).unwrap_or_default();
+    let (palette, clip) = focus
+        .single()
+        .map(|e| (e.palette.clone(), e.clip.clone()))
+        .unwrap_or_default();
     let cues: Vec<String> = {
         let mut v: Vec<String> = stats.cues.iter().map(|(k, v)| format!("{k} {v}")).collect();
         v.sort();
@@ -935,7 +1137,11 @@ fn update_stats(
         meshes.iter().count(),
         tris as f32 / 1000.0,
         stats.last_swap_ms.map(|m| format!("{m:.0} ms")).unwrap_or("-".into()),
-        if cues.is_empty() { "none yet".to_string() } else { cues.join(", ") },
+        if cues.is_empty() {
+            "none yet".to_string()
+        } else {
+            cues.join(", ")
+        },
         stats.last_cue,
     );
     for mut t in &mut text {

@@ -32,4 +32,6 @@ The Blender studies show a side-view environment and three animated characters w
 
 The repository's [parametric Blender sources](../assets/blender/README.md) rebuild this direction from scripts and seeds. Three explorers share one skeleton, modular parts, and semantic material regions. Moss & Ember, the Opal Deep, and Roots of Giants are cross-section scenes whose layouts come from [world generation](world-generation.md); stations, props, and explorers are placed from the generated landmarks. The renders are in `assets/renders/concept/`.
 
-Next, export one explorer and several equipment combinations into the client. Prove runtime assembly and swapping across idle, movement, mining, and attack, then validate attachments, effect stacking, terrain contact, and performance on phones.
+The [client spike](../client/README.md) brings the explorer kit into Bevy 0.20 on WASM/WebGPU. A rig and 33 separately exported parts are assembled at runtime, swapped per slot, recoloured by region, and animated with clip events. It has been checked only on a software WebGPU adapter.
+
+Next, measure that spike on phones: frame time with crowds, swap latency, and load time. Then validate effect stacking and terrain contact in a playable slice.
