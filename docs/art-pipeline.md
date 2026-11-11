@@ -30,6 +30,6 @@ Use the engine slice to settle export conventions, animation handling, and geome
 
 The Blender studies show a side-view environment and three animated characters with independently configurable outfits, headwear, back gear, tools, and colors. The characters share a skeleton layout; equipment combinations are assembled in Blender.
 
-The repository's [parametric Blender sources](../assets/blender/README.md) rebuild this direction from scripts and seeds. Three explorers share one skeleton, modular parts, and semantic material regions. Moss & Ember, the Opal Deep, and Roots of Giants are generated as cross-section scenes from a single material field. The renders are in `assets/renders/concept/`.
+The repository's [parametric Blender sources](../assets/blender/README.md) rebuild this direction from scripts and seeds. Three explorers share one skeleton, modular parts, and semantic material regions. Moss & Ember, the Opal Deep, and Roots of Giants are cross-section scenes whose layouts come from [world generation](world-generation.md); stations, props, and explorers are placed from the generated landmarks. The renders are in `assets/renders/concept/`.
 
 Next, export one explorer and several equipment combinations into the client. Prove runtime assembly and swapping across idle, movement, mining, and attack, then validate attachments, effect stacking, terrain contact, and performance on phones.

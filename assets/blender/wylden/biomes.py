@@ -1,7 +1,10 @@
-"""Biome scenes: terrain plan, dressing, stations, lighting and cast.
+"""Biome scenes: generation rules, dressing, stations, lighting and cast.
 
-Each builder returns a Scene describing where explorers stand so the render
-script can place them on generated floors.
+Each biome supplies rules to worldgen (which landmarks exist, how they grow
+from one another, which are sealed) and a seed. The solved world drives the
+terrain, and every station, landmark prop, light and explorer is placed
+relative to generated landmarks, routes and floors. The fixed inputs are the
+rules, the seed and the camera window.
 """
 
 import math
@@ -10,7 +13,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from mathutils import Vector
 
-from . import core, props, shaders, terrain
+from . import core, props, shaders, terrain, worldgen
 
 V = Vector
 PITCH = 10.0
@@ -23,6 +26,7 @@ class Scene:
     camera_target: tuple
     width: float
     details: list = field(default_factory=list)  # (suffix, target, width)
+    solution: object = None
     cast: list = field(default_factory=list)  # (kind, pose, x, y, z_from, yaw)
     post: dict = field(default_factory=dict)
 
@@ -208,41 +212,284 @@ def floating_embers(coll, rng, center, spread, count, color="#FFA040", strength=
     return ob
 
 
+def ruin_pillar(coll, base, height, mat, rng, broken=False, name="ruin"):
+    b = V(base)
+    rings = [
+        (b + V((0, 0, -0.3)), 0.42, 0.42, 4.0),
+        (b + V((0, 0, 0.25)), 0.4, 0.4, 4.0),
+        (b + V((0, 0, 0.32)), 0.3, 0.3, 6.0),
+        (b + V((0, 0, height - 0.3)), 0.28, 0.28, 6.0),
+        (b + V((0, 0, height - 0.22)), 0.38, 0.38, 4.0),
+        (b + V((0, 0, height)), 0.4, 0.4, 4.0),
+    ]
+    if broken:
+        rings = rings[:4]
+        rings[-1] = (b + V((rng.normal(0, 0.05), 0, height * 0.55)), 0.27, 0.27, 6.0)
+    ob = core.loft(f"{name}.pillar", rings, seg=24, cap=(0.1, 0.25 if not broken else 0.6), coll=coll)
+    core.subsurf(ob, 1)
+    core.set_material(ob, mat)
+    return ob
+
+
+def root(name, points, coll, mat, seg=16):
+    pts = terrain.catmull(points, step=0.25)
+    rings = [(V((x, y, z)), r, r * 0.92) for x, y, z, r in pts]
+    ob = core.loft(name, rings, seg=seg, cap=(0.6, 0.9), x_hint=(0, 0, 1), coll=coll)
+    core.subsurf(ob, 1)
+    core.set_material(ob, mat)
+    return ob
+
+
+def shaft(name, top, bottom, width, coll, color="#FFE2A8", strength=1.4):
+    t, b = V(top), V(bottom)
+    side = V((1, 0, 0)) * width / 2
+    vs = [b - side * 0.6, b + side * 0.6, t + side, t - side]
+    ob = core.mesh_object(name, vs, [(0, 1, 2, 3)], coll=coll, smooth=False, recalc=False)
+    uv = ob.data.uv_layers.new(name="UVMap")
+    for li, co in zip(ob.data.polygons[0].loop_indices, ((0, 0), (1, 0), (1, 1), (0, 1))):
+        uv.data[li].uv = co
+    core.set_material(ob, shaders.shaft_material(name, color, strength))
+    ob.visible_shadow = False
+    return ob
+
+
+# ---------------------------------------------------------------------------
+# Generation rules (worldgen plans)
+# ---------------------------------------------------------------------------
+
+
+def _steps(specs, parents):
+    for sp, par in zip(specs, parents):
+        sp["from"] = par
+    return specs
+
+
+def moss_rules(rng):
+    """Surface meadow; a mouth drops to a forge hall, then an ember seam, a descent east and a lower gallery.
+    A sealed pocket near the seam waits for mining to open it."""
+    b = (-13.5, 13.5, -11.25, 3.75)
+    surf = worldgen.surface_line(rng, b[0], b[1], base=1.0, amp=0.45, scale=4.0, bumps=[(-11.5, 2.6, 1.0)])
+    mx = rng.uniform(-11.8, -10.4)
+    mouth = worldgen.Landmark("mouth", "surface", mx, float(surf(mx)), 0.0, 0.0)
+    steps = _steps(
+        [
+            dict(name="forge", role="station", side=1, gap=(5.0, 7.0), depth=(5.4, 6.2), rx=(3.8, 4.6), rz=(1.6, 1.9)),
+            dict(name="seam", role="deposit", side=1, gap=(1.2, 2.4), dz=(-0.9, 0.3), rx=(1.8, 2.3), rz=(1.2, 1.5)),
+            dict(
+                name="east",
+                role="exit",
+                side=1,
+                gap=(1.2, 3.5),
+                dz=(-3.6, -2.6),
+                rx=(1.6, 2.0),
+                rz=(1.0, 1.2),
+                x=(11.8, 13.4),
+            ),
+            dict(
+                name="gallery", role="passage", side=-1, gap=(0.8, 2.6), dz=(-0.5, 0.5), rx=(3.0, 4.0), rz=(1.0, 1.25)
+            ),
+            dict(
+                name="pocket",
+                role="discovery",
+                gap=(0.6, 2.0),
+                dz=(1.6, 2.8),
+                rx=(1.5, 1.9),
+                rz=(0.9, 1.1),
+                connect=False,
+                crust=1.2,
+            ),
+        ],
+        ["mouth", "forge", "seam", "east", "seam"],
+    )
+    lms, routes = worldgen.grow(rng, surf, b, mouth, steps)
+    routes += worldgen.add_loops(rng, lms, routes, n=1)
+    return worldgen.Plan(b, surf, lms, routes)
+
+
+def opal_rules(rng):
+    """No surface. A high western ledge leads down to a crystal grotto, a lake hall with a basin, a ruin
+    chamber and an eastern exit. A sealed cistern lies below the grotto."""
+    b = (-13.5, 13.5, -8.25, 7.5)
+    west = worldgen.Landmark("west", "exit", -12.6, rng.uniform(1.4, 2.6), rng.uniform(1.6, 2.0), rng.uniform(1.0, 1.2))
+    steps = _steps(
+        [
+            dict(name="grotto", role="crystal", side=1, gap=(1.4, 2.6), dz=(-2.6, -1.8), rx=(2.3, 2.8), rz=(2.3, 2.8)),
+            dict(
+                name="lake",
+                role="lake",
+                side=1,
+                gap=(0.4, 1.2),
+                dz=(-1.0, 0.0),
+                rx=(3.0, 3.6),
+                rz=(3.2, 3.8),
+                basin=(1.0, 1.4),
+            ),
+            dict(name="ruins", role="ruins", side=1, gap=(0.4, 1.2), dz=(-0.2, 0.9), rx=(2.0, 2.5), rz=(2.3, 2.7)),
+            dict(
+                name="east",
+                role="exit",
+                side=1,
+                gap=(0.6, 2.0),
+                dz=(-1.6, -0.2),
+                rx=(1.5, 1.9),
+                rz=(1.0, 1.2),
+                x=(11.8, 13.4),
+            ),
+            dict(
+                name="cistern",
+                role="discovery",
+                gap=(0.4, 2.4),
+                dz=(-4.6, -3.6),
+                rx=(1.8, 2.3),
+                rz=(0.8, 1.0),
+                connect=False,
+            ),
+        ],
+        ["west", "grotto", "lake", "ruins", "grotto"],
+    )
+    lms, routes = worldgen.grow(rng, None, b, west, steps)
+    routes += worldgen.add_loops(rng, lms, routes, n=1)
+    return worldgen.Plan(b, None, lms, routes)
+
+
+def opal_water(sol):
+    """Water fills the lake's basin up to just below its rim."""
+    lake = sol.plan.landmark("lake")
+    level = lake.floor - 0.15
+    X, Z = np.meshgrid(sol.xs, sol.zs)
+    return (~sol.solid) & (Z <= level) & (np.abs(X - lake.x) < lake.rx * 0.95) & (Z >= lake.floor - lake.basin - 1.0)
+
+
+def roots_rules(rng):
+    """A giant's trunk on the surface. One way down beside it reaches a root hall; a hollow lies under the
+    trunk, a deep grove beyond it, and exits east and west. A crack from the hollow lets light in."""
+    b = (-13.5, 13.5, -10.5, 4.5)
+    surf = worldgen.surface_line(rng, b[0], b[1], base=1.6, amp=0.3, scale=4.5)
+    tx = rng.uniform(-3.5, -1.0)
+    trunk = worldgen.Landmark("trunk", "surface", tx, float(surf(tx)), 0.0, 0.0)
+    steps = _steps(
+        [
+            dict(name="hall", role="hall", side=1, gap=(4.0, 5.5), depth=(5.0, 5.8), rx=(3.0, 3.6), rz=(1.6, 1.9)),
+            dict(name="hollow", role="hollow", side=-1, gap=(1.2, 2.6), dz=(-1.4, -0.4), rx=(2.2, 2.8), rz=(1.3, 1.6)),
+            dict(
+                name="east",
+                role="exit",
+                side=1,
+                gap=(1.0, 3.0),
+                dz=(-3.0, -1.8),
+                rx=(1.6, 2.0),
+                rz=(1.1, 1.3),
+                x=(11.8, 13.4),
+            ),
+            dict(name="grove", role="grove", side=-1, gap=(0.4, 1.4), dz=(-3.4, -2.4), rx=(2.2, 2.6), rz=(1.1, 1.4)),
+            dict(
+                name="west",
+                role="exit",
+                side=-1,
+                gap=(0.4, 2.0),
+                dz=(-0.6, 0.8),
+                rx=(1.5, 1.9),
+                rz=(1.0, 1.2),
+                x=(-13.4, -11.8),
+            ),
+        ],
+        ["trunk", "hall", "hall", "hollow", "grove"],
+    )
+    lms, routes = worldgen.grow(rng, surf, b, trunk, steps)
+    routes += worldgen.add_loops(rng, lms, routes, n=1)
+    hollow = next(lm for lm in lms if lm.name == "hollow")
+    cx = hollow.x + rng.uniform(0.3, 0.6) * hollow.rx
+    crack = [(cx, hollow.floor + hollow.rz * 1.2), (cx + rng.normal(0, 0.3), float(surf(cx)) + 1.0)]
+    routes.append(worldgen.route_path("hollow", "sky", crack, 0.42, "light", walk=False))
+    return worldgen.Plan(b, surf, lms, routes)
+
+
+# ---------------------------------------------------------------------------
+# Placement helpers
+# ---------------------------------------------------------------------------
+
+VIEW_X = (-11.0, 11.0)
+
+
+def frame(sol, top_pad=2.4, bottom_pad=0.8, min_width=22.0):
+    """Camera target and width showing the window's surface (or highest ceiling) down to its lowest routed floor."""
+    plan = sol.plan
+    xs = np.linspace(*VIEW_X, 60)
+    near = [
+        lm for lm in plan.landmarks if VIEW_X[0] - 1.5 < lm.x < VIEW_X[1] + 1.5 and lm.role != "surface" and lm.connect
+    ]
+    bottom = min(lm.floor - lm.basin for lm in near) - bottom_pad
+    if plan.surface is not None:
+        top = float(np.max(plan.surface(xs))) + top_pad
+    else:
+        top = max(lm.floor + lm.rz * 1.7 for lm in near) + 0.9
+    width = max(min_width, (top - bottom) * 16 / 9)
+    zc = (top + bottom) / 2 - 1.5 * math.sin(math.radians(PITCH))
+    return (0.0, 1.5, zc), width
+
+
+def wall_at(F, x, y, z, direction, limit=6.0, step=0.05):
+    """First solid x marching from (x, z) in direction (+1 or -1) at depth y."""
+    xs = x + direction * np.arange(0.0, limit, step)
+    vals = F.sample(np.stack([xs, np.full_like(xs, y), np.full_like(xs, z)], axis=1))
+    hit = np.nonzero(vals > 0)[0]
+    return float(xs[hit[0]]) if len(hit) else None
+
+
+def find_wall(F, lm, y, prefer, heights=(0.9, 1.3, 1.7)):
+    """A wall of landmark lm at chest height, preferring one side. Returns (x, z, side)."""
+    for side in (prefer, -prefer):
+        for h in heights:
+            wx = wall_at(F, lm.x, y, lm.floor + h, side, limit=lm.rx + 1.6)
+            if wx is not None:
+                return wx, lm.floor + h, side
+    return None
+
+
+def route_point(sol, a, b, t):
+    rt = next(r for r in sol.plan.routes if {r.a, r.b} == {a, b})
+    pts = rt.pts if rt.a == a else rt.pts[::-1]
+    return pts[int(np.clip(t, 0, 1) * (len(pts) - 1))]
+
+
+def build_field(sol, y_range, res, seed, **build):
+    x0, x1, z0, z1 = sol.plan.bounds
+    F = terrain.Field((x0, x1), (z0, z1), y_range, res=res, seed=seed)
+    F.from_solution(sol)
+    F.build(**build)
+    return F
+
+
+def crystal_site(coll, name, rng, pos, normal, size, mat, tints, light_color, light_power, cluster=6):
+    cl = props.crystal_cluster(rng, cluster, size, 6, 0.6)
+    props.instance(
+        name,
+        cl,
+        np.array([pos]),
+        np.array([normal]),
+        1.0,
+        rng=rng,
+        tints=props.tint_palette(rng, tints, 1, 0.02),
+        material=mat,
+        coll=coll,
+    )
+    n = np.asarray(normal, dtype=float)
+    lp = np.asarray(pos) + n * 0.5 * size + np.array([0, -0.8, 0.15])
+    core.light(f"{name}.light", "POINT", tuple(lp), light_power * size, color=light_color, size=0.4, coll=coll)
+
+
 # ---------------------------------------------------------------------------
 # Moss & Ember
 # ---------------------------------------------------------------------------
 
 
 def moss_and_ember(coll, seed=7, res=0.08):
-    rng = np.random.default_rng(seed)
-    F = terrain.Field((-13.5, 13.5), (-10.5, 3.5), (-0.6, 7.5), res=res, seed=seed)
+    sol = worldgen.solve(moss_rules, seed, start_role="surface", plans=40)
+    plan = sol.plan
+    rng = np.random.default_rng(seed + 1)
+    F = build_field(sol, (-0.6, 7.5), res, seed, pocket=3.0, pocket_var=0.6, relief=0.3, edge=0.12)
     xs = F.xs
-    surf = 1.0 + 0.3 * np.sin(xs * 0.22 + 1.0) + 0.2 * F.noise1(3.0) + 1.2 * np.exp(-(((xs + 11.5) / 2.6) ** 2))
-    surf += 0.45 * np.exp(-(((xs - 11.0) / 2.5) ** 2))
-    F.set_surface(surf)
-    F.tunnel(
-        [(-10.2, 2.2, 0.95), (-8.8, 0.5, 1.05), (-7.4, -1.2, 1.1), (-5.8, -2.6, 1.15), (-4.2, -3.4, 1.2)],
-        wobble=0.15,
-        k=0.6,
-    )
-    F.chamber(
-        1.2,
-        -2.75,
-        6.4,
-        1.95,
-        floor=lambda x: -4.55 + 0.12 * np.sin(x * 0.7) + 0.07 * np.cos(x * 1.9),
-        k=0.6,
-        wobble=0.22,
-    )
-    F.tunnel([(7.4, -3.7, 1.0), (8.9, -5.2, 1.0), (10.2, -6.6, 1.05)], wobble=0.15, k=0.6)
-    F.tunnel(
-        [(-3.0, -7.4, 0.95), (1.5, -7.5, 1.1), (6.0, -7.3, 1.15), (10.5, -7.2, 1.2), (14.5, -7.0, 1.2)],
-        floor=lambda x: -8.3 + 0.1 * np.sin(x),
-        wobble=0.15,
-        k=0.6,
-    )
-    F.chamber(9.7, -1.5, 1.5, 0.8, floor=-2.2, wobble=0.18, k=0.4)
-    F.build(pocket=3.0, pocket_var=0.6, relief=0.3, edge=0.14)
+    surf = plan.surface(xs)
     ground = F.mesh("terrain", coll)
     mat = shaders.terrain_material(
         "moss_ember.terrain",
@@ -254,7 +501,7 @@ def moss_and_ember(coll, seed=7, res=0.08):
             (0.9, "#5A3F2E"),
             (1.0, "#3E2C22"),
         ],
-        z_range=(-10.0, 1.4),
+        z_range=(plan.bounds[2], 1.4),
         cover=("#4E7A2E", "#86A63A"),
         cover_amount=0.75,
         veins=dict(color="#FF7A1E", strength=9.0, scale=0.8, width=0.022, amount=0.3, region_scale=0.35),
@@ -262,12 +509,14 @@ def moss_and_ember(coll, seed=7, res=0.08):
         bump=0.45,
     )
     core.set_material(ground, mat)
+    mouth, forge, seam, pocket = (plan.landmark(n) for n in ("mouth", "forge", "seam", "pocket"))
 
     # Surface cover and trees.
     grass_mat = props.tinted_material("me.grass", rough=0.7, sss=0.2, sheen=0.3)
     leaf_mat = props.tinted_material("me.leaf", rough=0.75, sss=0.25, sheen=0.3)
     bark = shaders.bark_material("me.bark", dark="#3A2A22", light="#6A4E3A", moss="#5E8A34")
     is_surface = lambda c, n: c[:, 2] > np.interp(c[:, 0], xs, surf) - 0.5
+    in_cave = lambda c, n: c[:, 2] < np.interp(c[:, 0], xs, surf) - 0.6
     scatter_layer(
         F,
         rng,
@@ -283,7 +532,6 @@ def moss_and_ember(coll, seed=7, res=0.08):
         y_range=(0.0, 7.4),
         mask=is_surface,
     )
-    in_cave = lambda c, n: c[:, 2] < np.interp(c[:, 0], xs, surf) - 0.6
     scatter_layer(
         F,
         rng,
@@ -315,9 +563,9 @@ def moss_and_ember(coll, seed=7, res=0.08):
         mask=in_cave,
         sink=0.03,
     )
-    for i, (x, y, h) in enumerate(
-        [(-11.2, 5.6, 2.6), (-5.4, 6.6, 2.2), (4.2, 6.2, 2.8), (9.4, 5.0, 2.3), (12.4, 6.8, 2.6), (-1.6, 7.0, 1.9)]
-    ):
+    tx = [x for x in rng.uniform(-12.5, 12.5, 14) if abs(x - mouth.x) > 2.6][:7]
+    for i, x in enumerate(tx):
+        y = rng.uniform(4.8, 7.2)
         z = F.floor_at(x, y, 4.0)
         if z is None:
             continue
@@ -326,7 +574,7 @@ def moss_and_ember(coll, seed=7, res=0.08):
             f"me.tree{i}",
             rng,
             V((x, y, z - 0.2)),
-            h,
+            rng.uniform(1.9, 2.8),
             16,
             bark,
             leaf_mat,
@@ -386,64 +634,49 @@ def moss_and_ember(coll, seed=7, res=0.08):
     if stal:
         core.subsurf(stal, 1)
     cap_mat = props.tinted_material("me.mushroom", rough=0.5, sss=0.3, emit=1.2, emit_from_tint=True)
-    shroom_pts, shroom_n = F.scatter(rng, 30, normal_min=0.7, y_range=(0.3, 2.6), mask=in_cave)
+    pts, nn = F.scatter(rng, 30, normal_min=0.7, y_range=(0.3, 2.6), mask=in_cave)
     props.instance(
         "me.mushrooms",
         [props.mushroom(rng, 0.22, 0.1), props.mushroom(rng, 0.3, 0.13)],
-        shroom_pts,
-        shroom_n,
-        0.6 + 0.8 * rng.random(len(shroom_pts)),
+        pts,
+        nn,
+        0.6 + 0.8 * rng.random(len(pts)),
         align=0.5,
         rng=rng,
-        tints=props.tint_palette(rng, ["#D2552A", "#E0782E", "#B8402A"], len(shroom_pts)),
+        tints=props.tint_palette(rng, ["#D2552A", "#E0782E", "#B8402A"], len(pts)),
         material=cap_mat,
         coll=coll,
     )
 
-    # Ember crystals: the prospector's target and the hidden pocket.
+    # Ember crystals: the seam wall the prospector works, the sealed pocket, and a few seeded wall sites.
     ember_mat = props.tinted_material(
         "me.ember_crystal", rough=0.25, emit=2.6, emit_from_tint=True, transmission=0.3, coat=0.6
     )
-    sites = [
-        (8.0, 1.2, -3.2, (-1, 0, 0.1), 1.0),
-        (9.6, 1.4, -2.15, (0, 0, 1), 0.7),
-        (10.6, 1.2, -1.4, (-1, 0, 0), 0.6),
-        (-3.4, 2.3, -4.4, (0.3, 0, 1), 0.6),
-        (11.6, 1.5, -8.2, (0, 0, 1), 0.8),
-        (3.6, 2.4, -0.95, (0, 0, -1), 0.55),
-        (-1.8, 1.8, -7.9, (0, 0, 1), 0.6),
-    ]
-    for i, (x, y, z, n, s) in enumerate(sites):
-        cl = props.crystal_cluster(rng, 6, s, 6, 0.6)
-        pts = np.array([[x, y, z]])
-        props.instance(
-            f"me.ember{i}",
-            cl,
-            pts,
-            np.array([n]),
-            1.0,
-            rng=rng,
-            tints=props.tint_palette(rng, ["#FF5A12", "#FF7A1A"], 1),
-            material=ember_mat,
-            coll=coll,
-        )
-        core.light(
-            f"me.ember_light{i}",
-            "POINT",
-            (x - 0.2 * n[0], y - 0.6, z + 0.3 * n[2] + 0.2),
-            180 * s,
-            color="#FF8A30",
-            size=0.3,
-            coll=coll,
+    ember = ["#FF5A12", "#FF7A1A"]
+    wall = find_wall(F, seam, 1.3, 1 if pocket.x >= seam.x else -1)
+    if wall is None:
+        wall = (seam.x + seam.rx, seam.floor + 1.0, 1)
+    wx, wz, side = wall
+    crystal_site(
+        coll, "me.seam", rng, (wx + 0.05 * side, 1.2, wz + 0.1), (-side, 0, 0.15), 1.0, ember_mat, ember, "#FF8A30", 180
+    )
+    pz = F.floor_at(pocket.x, 1.4, pocket.floor + 0.8)
+    if pz is not None:
+        crystal_site(coll, "me.pocket", rng, (pocket.x, 1.4, pz), (0, 0, 1), 0.8, ember_mat, ember, "#FF8A30", 180)
+    wall_pts, wall_n = F.scatter(
+        rng, 3, y_range=(0.8, 2.4), mask=lambda c, n: in_cave(c, n) & (np.abs(n[:, 0]) > 0.7) & (np.abs(c[:, 0]) < 10.5)
+    )
+    for i, (p, n) in enumerate(zip(wall_pts, wall_n)):
+        crystal_site(
+            coll, f"me.vein{i}", rng, tuple(p), tuple(n), rng.uniform(0.5, 0.7), ember_mat, ember, "#FF8A30", 180
         )
 
-    # Crafting station.
-    fx = -1.6
-    fz = F.floor_at(fx, 1.9, -2.5)
+    # Crafting station in the forge hall.
+    fx = forge.x - forge.rx * 0.35
+    fz = F.floor_at(fx, 1.9, forge.floor + 1.5)
     furnace(coll, (fx, 1.9, fz), rng)
-    ax = 0.3
-    az = F.floor_at(ax, 1.5, -2.5)
-    anvil(coll, (ax, 1.5, az))
+    ax = fx + 1.9
+    anvil(coll, (ax, 1.5, F.floor_at(ax, 1.5, forge.floor + 1.5)))
     floating_embers(coll, rng, (fx + 0.2, 1.4, fz + 2.2), (0.6, 0.3, 0.9), 30, strength=12.0)
 
     # Lighting.
@@ -455,18 +688,37 @@ def moss_and_ember(coll, seed=7, res=0.08):
     core.light(
         "me.sun", "SUN", (0, 0, 20), 3.2, color="#FFD2A0", size=math.radians(3), rotation=(52, -38, 0), coll=coll
     )
-    core.light("me.cave_fill", "AREA", (0.5, -6.0, -3.5), 260, color="#7FA0D8", size=14, rotation=(90, 0, 0), coll=coll)
+    target, width = frame(sol)
     core.light(
-        "me.mouth_fill", "AREA", (-6.5, -3.0, 0.5), 120, color="#FFC890", size=4, rotation=(70, 0, -20), coll=coll
+        "me.cave_fill",
+        "AREA",
+        (0.5, -6.0, target[2] - 1.0),
+        260,
+        color="#7FA0D8",
+        size=14,
+        rotation=(90, 0, 0),
+        coll=coll,
+    )
+    mp = route_point(sol, "mouth", "forge", 0.35)
+    core.light(
+        "me.mouth_fill",
+        "AREA",
+        (mp[0], -3.0, mp[1] + 1.5),
+        120,
+        color="#FFC890",
+        size=4,
+        rotation=(70, 0, -20),
+        coll=coll,
     )
 
-    # Parallax hills.
+    # Parallax hills sit on the horizon behind the surface.
+    s_mean = float(np.mean(plan.surface(np.linspace(*VIEW_X, 40))))
     hill_layer(
         "me.hills_far",
         rng,
         (-40, 40),
         40.0,
-        screen_z(2.4, 40.0),
+        screen_z(s_mean + 1.4, 40.0),
         0.9,
         7.0,
         "#B98AA0",
@@ -474,16 +726,26 @@ def moss_and_ember(coll, seed=7, res=0.08):
         bumps=[(-6, 4, 1.2), (14, 5, 1.6)],
     )
     hill_layer(
-        "me.hills_mid", rng, (-40, 40), 22.0, screen_z(1.7, 22.0), 0.7, 4.0, "#7A6E8E", coll, bumps=[(8, 2.5, 0.9)]
+        "me.hills_mid",
+        rng,
+        (-40, 40),
+        22.0,
+        screen_z(s_mean + 0.7, 22.0),
+        0.7,
+        4.0,
+        "#7A6E8E",
+        coll,
+        bumps=[(8, 2.5, 0.9)],
     )
-    hill_layer("me.hills_near", rng, (-40, 40), 12.0, screen_z(1.2, 12.0), 0.55, 2.2, "#4E5E6A", coll)
+    hill_layer("me.hills_near", rng, (-40, 40), 12.0, screen_z(s_mean + 0.2, 12.0), 0.55, 2.2, "#4E5E6A", coll)
 
-    sc = Scene("moss_and_ember", F, camera_target=(0.0, 1.5, -2.35), width=22.0)
-    sc.details = [("forge", (-0.4, 1.5, -3.3), 7.5)]
+    sc = Scene("moss_and_ember", F, camera_target=target, width=width, solution=sol)
+    sc.details = [("forge", (fx + 0.9, 1.5, forge.floor + 1.2), 7.5)]
+    pp = route_point(sol, "mouth", "forge", 0.45)
     sc.cast = [
-        ("prospector", "mine_strike", 6.75, 1.3, -2.5, -18.0),
-        ("warden", "hammer_raise", -0.65, 1.2, -2.5, -22.0),
-        ("pathfinder", "idle_lantern", -7.0, 1.4, -0.5, -28.0),
+        ("prospector", "mine_strike", wx - side * 1.0, 1.3, seam.floor + 1.2, -18.0 if side > 0 else -162.0),
+        ("warden", "hammer_raise", fx + 1.05, 1.2, forge.floor + 1.5, -22.0),
+        ("pathfinder", "idle_lantern", float(pp[0]), 1.4, float(pp[1]) + 0.3, -28.0),
     ]
     return sc
 
@@ -493,45 +755,16 @@ def moss_and_ember(coll, seed=7, res=0.08):
 # ---------------------------------------------------------------------------
 
 
-def ruin_pillar(coll, base, height, mat, rng, broken=False, name="ruin"):
-    b = V(base)
-    rings = [
-        (b + V((0, 0, -0.3)), 0.42, 0.42, 4.0),
-        (b + V((0, 0, 0.25)), 0.4, 0.4, 4.0),
-        (b + V((0, 0, 0.32)), 0.3, 0.3, 6.0),
-        (b + V((0, 0, height - 0.3)), 0.28, 0.28, 6.0),
-        (b + V((0, 0, height - 0.22)), 0.38, 0.38, 4.0),
-        (b + V((0, 0, height)), 0.4, 0.4, 4.0),
-    ]
-    if broken:
-        rings = rings[:4]
-        rings[-1] = (b + V((rng.normal(0, 0.05), 0, height * 0.55)), 0.27, 0.27, 6.0)
-    ob = core.loft(f"{name}.pillar", rings, seg=24, cap=(0.1, 0.25 if not broken else 0.6), coll=coll)
-    core.subsurf(ob, 1)
-    core.set_material(ob, mat)
-    return ob
-
-
 def opal_deep(coll, seed=11, res=0.08):
-    rng = np.random.default_rng(seed)
-    F = terrain.Field((-13.5, 13.5), (-7.5, 7.5), (-0.6, 6.5), res=res, seed=seed)
-
-    def floor(x):
-        basin = -1.25 * np.exp(-(((x - 0.8) / 3.4) ** 4))
-        return -3.4 + basin + 0.15 * np.sin(x * 0.8) + 0.25 * np.tanh((x - 6.5) * 0.6)
-
-    F.chamber(0.2, 0.0, 10.2, 3.9, floor=floor, k=0.7, wobble=0.35)
-    F.tunnel([(-14.5, 3.2, 1.1), (-11.5, 2.9, 1.15), (-8.8, 2.6, 1.1)], floor=1.95, wobble=0.12, k=0.7)
-    F.tunnel([(8.5, -2.6, 1.0), (11.0, -3.4, 1.1), (14.5, -3.6, 1.1)], floor=-4.0, wobble=0.12, k=0.6)
-    F.chamber(-9.5, -5.2, 2.6, 1.1, floor=-6.0, wobble=0.2, k=0.5)
-    F.solid_blob([(5.6, -4.5, 0.75), (5.35, -1.5, 0.42), (5.3, 1.5, 0.4), (5.6, 4.4, 0.9)])
-    F.solid_blob([(-8.6, 1.9, 0.55), (-6.6, 1.8, 0.45), (-5.6, 1.7, 0.3)])
-    F.build(pocket=3.4, pocket_var=0.8, relief=0.38, edge=0.16, back_relief=0.55)
+    sol = worldgen.solve(opal_rules, seed, water_fn=opal_water, start_role="exit", plans=40)
+    plan = sol.plan
+    rng = np.random.default_rng(seed + 1)
+    F = build_field(sol, (-0.6, 6.5), res, seed, pocket=3.4, pocket_var=0.8, relief=0.38, edge=0.14, back_relief=0.55)
     ground = F.mesh("terrain", coll)
     mat = shaders.terrain_material(
         "opal.terrain",
         strata=[(0.0, "#2A2E4A"), (0.3, "#3A3E62"), (0.55, "#4A4E74"), (0.8, "#3E4468"), (1.0, "#343858")],
-        z_range=(-7.0, 7.0),
+        z_range=(plan.bounds[2], plan.bounds[3]),
         cover=("#4A5A82", "#5E6E96"),
         cover_amount=0.35,
         front_dark=0.5,
@@ -540,6 +773,7 @@ def opal_deep(coll, seed=11, res=0.08):
         rock_scale=1.1,
     )
     core.set_material(ground, mat)
+    west, grotto, lake, ruins = (plan.landmark(n) for n in ("west", "grotto", "lake", "ruins"))
 
     in_view = dict(y_range=(0.15, 3.6))
     opal = ["#C9A8FF", "#7FE6E0", "#FF9ED2", "#9FB8FF"]
@@ -552,38 +786,28 @@ def opal_deep(coll, seed=11, res=0.08):
         coat=1.0,
         iridescent=["#7FF2E8", "#B89CFF", "#FF9AD5", "#FFF2C0"],
     )
-    big_sites = [
-        (-3.5, 2.0, None, 1.6),
-        (4.6, 2.6, None, 1.1),
-        (8.6, 1.8, None, 1.0),
-        (-11.8, 1.6, 2.0, 0.9),
-        (0.6, 2.0, "ceil", 1.5),
-        (-5.4, 2.4, "ceil", 1.1),
-        (7.6, 2.2, "ceil", 0.9),
+    colors = ["#7FE8F0", "#C8A0FF", "#FF9ACF"]
+    sites = [
+        (grotto.x + 0.45 * grotto.rx, grotto, "floor", 1.6),
+        (grotto.x - 0.3 * grotto.rx, grotto, "ceil", 1.1),
+        (lake.x - 0.82 * lake.rx, lake, "floor", 1.0),
+        (lake.x + 0.1 * lake.rx, lake, "ceil", 1.5),
+        (ruins.x + 0.5 * ruins.rx, ruins, "ceil", 0.9),
+        (west.x + 0.6 * west.rx, west, "floor", 0.8),
     ]
-    for i, (x, y, zf, s) in enumerate(big_sites):
-        if zf == "ceil":
-            z = F.ceiling_at(x, y, 0.0)
-            n = (0, 0, -1)
+    big = None
+    for i, (x, lm, where, s) in enumerate(sites):
+        if where == "ceil":
+            z, n = F.ceiling_at(x, 2.0, lm.floor + 1.0), (0, 0, -1)
         else:
-            z = F.floor_at(x, y, 0.0 if zf is None else zf)
-            n = (0, 0, 1)
+            z, n = F.floor_at(x, 2.0, lm.floor + 1.0), (0, 0, 1)
         if z is None:
             continue
-        cl = props.crystal_cluster(rng, 7, s, 6, 0.7)
-        props.instance(
-            f"opal.big{i}",
-            cl,
-            np.array([[x, y, z - 0.05 * n[2]]]),
-            np.array([n]),
-            1.0,
-            rng=rng,
-            tints=props.tint_palette(rng, opal, 1, 0.02),
-            material=crystal_mat,
-            coll=coll,
+        crystal_site(
+            coll, f"opal.big{i}", rng, (x, 2.0, z - 0.05 * n[2]), n, s, crystal_mat, opal, colors[i % 3], 320, cluster=7
         )
-        col = ["#7FE8F0", "#C8A0FF", "#FF9ACF"][i % 3]
-        core.light(f"opal.light{i}", "POINT", (x, y - 0.9, z + 0.7 * n[2] * s), 320 * s, color=col, size=0.6, coll=coll)
+        if i == 0:
+            big = (x, z)
     small = [props.crystal_cluster(rng, 4, 0.35, 6, 0.8) for _ in range(5)]
     scatter_layer(
         F,
@@ -663,7 +887,8 @@ def opal_deep(coll, seed=11, res=0.08):
         sink=0.02,
         **in_view,
     )
-    spores = rng.random((60, 3)) * np.array([22, 2.6, 8]) + np.array([-11, 0.5, -3.0])
+    target, width = frame(sol)
+    spores = rng.random((60, 3)) * np.array([22, 2.6, 8]) + np.array([-11, 0.5, target[2] - 4.0])
     props.instance(
         "opal.spores",
         props.icosphere(0),
@@ -674,49 +899,87 @@ def opal_deep(coll, seed=11, res=0.08):
         coll=coll,
     )
 
-    # Underground lake.
-    wz = -3.95
-    lake = core.mesh_object(
-        "opal.lake", [(-5.0, 0.02, wz), (7.0, 0.02, wz), (7.0, 4.5, wz), (-5.0, 4.5, wz)], [(0, 1, 2, 3)], coll=coll
-    )
-    core.set_material(lake, shaders.water_material("opal.water", deep="#123A58", glow="#3AD0D8", glow_strength=3.0))
-    core.light(
-        "opal.lake_glow", "AREA", (0.8, 1.6, wz + 0.15), 160, color="#3AD0D8", size=7, rotation=(180, 0, 0), coll=coll
-    )
+    # The lake fills the generated basin.
+    level = lake.floor - 0.15
+    cols = np.nonzero(sol.water.any(axis=0))[0]
+    if len(cols):
+        lx0, lx1 = sol.xs[cols[0]] - 0.3, sol.xs[cols[-1]] + 0.3
+        water = core.mesh_object(
+            "opal.lake",
+            [(lx0, 0.02, level), (lx1, 0.02, level), (lx1, 4.5, level), (lx0, 4.5, level)],
+            [(0, 1, 2, 3)],
+            coll=coll,
+        )
+        core.set_material(
+            water, shaders.water_material("opal.water", deep="#123A58", glow="#3AD0D8", glow_strength=3.0)
+        )
+        core.light(
+            "opal.lake_glow",
+            "AREA",
+            ((lx0 + lx1) / 2, 1.6, level + 0.15),
+            160,
+            color="#3AD0D8",
+            size=max(2.0, lx1 - lx0),
+            rotation=(180, 0, 0),
+            coll=coll,
+        )
 
-    # Ruins: a discovery on the far shore.
+    # Ruins: the discovery in the eastern chamber.
     ruin_mat = core.principled("opal.ruin", "#5E5F80", rough=0.8, bump=0.5, bump_scale=6)
-    for i, (x, y, h, broken) in enumerate([(7.6, 2.4, 3.0, False), (9.4, 2.6, 3.0, True), (11.2, 2.4, 2.9, False)]):
-        z = F.floor_at(x, y, 0.0)
-        if z is not None:
-            ruin_pillar(coll, (x, y, z), h, ruin_mat, rng, broken, name=f"opal.ruin{i}")
-    zl = F.floor_at(7.6, 2.4, 0.0)
-    if zl is not None:
+    tops = []
+    for i, (k, broken) in enumerate([(-0.55, False), (0.15, True), (0.75, False)]):
+        x = ruins.x + k * ruins.rx
+        z = F.floor_at(x, 2.4, ruins.floor + 1.0)
+        c = F.ceiling_at(x, 2.4, ruins.floor + 1.0)
+        if z is None:
+            continue
+        h = min(3.0, (c - z - 0.4) if c else 3.0)
+        ruin_pillar(coll, (x, 2.4, z), h, ruin_mat, rng, broken, name=f"opal.ruin{i}")
+        tops.append((x, z + h, broken))
+    standing = [t for t in tops if not t[2]]
+    if len(standing) >= 2:
+        (xa, za, _), (xb, zb, _) = standing[0], standing[1]
+        zt = min(za, zb) + 0.2
         lintel = core.loft(
             "opal.lintel",
-            [(V((7.0, 2.4, zl + 3.2)), 0.25, 0.32, 4.0), (V((9.2, 2.4, zl + 3.15)), 0.25, 0.32, 4.0)],
+            [(V((xa - 0.6, 2.4, zt)), 0.25, 0.32, 4.0), (V((xb + 0.6, 2.4, zt - 0.05)), 0.25, 0.32, 4.0)],
             x_hint=(0, 0, 1),
             cap=(0.1, 0.4),
             coll=coll,
         )
         core.subsurf(lintel, 1)
         core.set_material(lintel, ruin_mat)
-        glyph = core.ellipsoid("opal.glyph", (8.5, 2.05, zl + 1.9), (0.16, 0.03, 0.24), coll=coll)
+        gx, gz = (xa + xb) / 2, (za + zt) / 2 - 1.0
+        glyph = core.ellipsoid("opal.glyph", (gx, 2.05, gz), (0.16, 0.03, 0.24), coll=coll)
         core.set_material(glyph, core.emission("opal.glyph", "#7AE8FF", 3.0))
-        core.light("opal.glyph_light", "POINT", (8.5, 1.4, zl + 1.9), 120, color="#9AF0FF", size=0.4, coll=coll)
+        core.light("opal.glyph_light", "POINT", (gx, 1.4, gz), 120, color="#9AF0FF", size=0.4, coll=coll)
 
     shaders.sky_world([(0.0, "#05060C"), (1.0, "#0A0C18")], ambient="#2A3460", ambient_strength=0.8)
-    core.light("opal.fill", "AREA", (0.0, -7.0, 1.0), 1100, color="#7A8CFF", size=18, rotation=(90, 0, 0), coll=coll)
-    core.light("opal.rim", "AREA", (0.0, 6.5, 3.0), 120, color="#E0A0FF", size=14, rotation=(-80, 0, 0), coll=coll)
+    core.light(
+        "opal.fill",
+        "AREA",
+        (0.0, -7.0, target[2] + 1.5),
+        1100,
+        color="#7A8CFF",
+        size=18,
+        rotation=(90, 0, 0),
+        coll=coll,
+    )
+    core.light(
+        "opal.rim", "AREA", (0.0, 6.5, target[2] + 3.5), 120, color="#E0A0FF", size=14, rotation=(-80, 0, 0), coll=coll
+    )
 
-    sc = Scene("opal_deep", F, camera_target=(0.0, 1.5, -0.6), width=22.0)
-    sc.details = [("crystal_hall", (-6.8, 1.5, -1.0), 9.0)]
-    sc.cast = [
-        ("pathfinder", "idle_lantern", -9.6, 1.5, 3.5, -24.0),
-        ("prospector", "mine_windup", -5.3, 1.4, 0.0, -24.0),
-        ("warden", "guard", 7.0, 1.0, 0.0, -30.0),
-    ]
+    sc = Scene("opal_deep", F, camera_target=target, width=width, solution=sol)
     sc.post = dict(bloom=0.55, vignette=0.32)
+    pp = route_point(sol, "west", "grotto", 0.55)
+    bx = big[0] if big else grotto.x
+    sc.cast = [
+        ("pathfinder", "idle_lantern", float(pp[0]), 1.5, float(pp[1]) + 0.3, -24.0),
+        ("prospector", "mine_windup", bx - 1.1, 1.4, grotto.floor + 1.2, -24.0),
+        ("warden", "guard", ruins.x - 0.2 * ruins.rx, 1.0, ruins.floor + 1.2, -30.0),
+    ]
+    mid = ((float(pp[0]) + bx) / 2, 1.5, (float(pp[1]) + grotto.floor) / 2 + 0.4)
+    sc.details = [("crystal_hall", mid, 9.0)]
     return sc
 
 
@@ -725,57 +988,18 @@ def opal_deep(coll, seed=11, res=0.08):
 # ---------------------------------------------------------------------------
 
 
-def root(name, points, coll, mat, seg=16):
-    pts = terrain.catmull(points, step=0.25)
-    rings = [(V((x, y, z)), r, r * 0.92) for x, y, z, r in pts]
-    ob = core.loft(name, rings, seg=seg, cap=(0.6, 0.9), x_hint=(0, 0, 1), coll=coll)
-    core.subsurf(ob, 1)
-    core.set_material(ob, mat)
-    return ob
-
-
-def shaft(name, top, bottom, width, coll, color="#FFE2A8", strength=1.4):
-    t, b = V(top), V(bottom)
-    side = V((1, 0, 0)) * width / 2
-    vs = [b - side * 0.6, b + side * 0.6, t + side, t - side]
-    ob = core.mesh_object(name, vs, [(0, 1, 2, 3)], coll=coll, smooth=False, recalc=False)
-    uv = ob.data.uv_layers.new(name="UVMap")
-    for li, co in zip(ob.data.polygons[0].loop_indices, ((0, 0), (1, 0), (1, 1), (0, 1))):
-        uv.data[li].uv = co
-    core.set_material(ob, shaders.shaft_material(name, color, strength))
-    ob.visible_shadow = False
-    return ob
-
-
 def roots_of_giants(coll, seed=23, res=0.08):
-    rng = np.random.default_rng(seed)
-    F = terrain.Field((-13.5, 13.5), (-9.5, 4.5), (-0.6, 8.0), res=res, seed=seed)
+    sol = worldgen.solve(roots_rules, seed, start_role="surface", plans=40)
+    plan = sol.plan
+    rng = np.random.default_rng(seed + 1)
+    F = build_field(sol, (-0.6, 8.0), res, seed, pocket=3.2, pocket_var=0.7, relief=0.34, edge=0.14)
     xs = F.xs
-    surf = 1.6 + 0.25 * np.sin(xs * 0.3) + 0.15 * F.noise1(2.0) + 0.9 * np.exp(-(((xs + 3.0) / 3.5) ** 2))
-    F.set_surface(surf)
-    # Hollows follow the paths roots have pushed through the earth.
-    F.tunnel(
-        [(-6.0, -0.6, 1.25), (-9.0, -2.2, 1.35), (-11.5, -3.6, 1.3), (-14.5, -4.4, 1.3)],
-        floor=lambda x: -4.9 + 0.35 * np.tanh((x + 9.0) * 0.5) + 0.06 * np.sin(x * 2),
-        wobble=0.18,
-        k=0.7,
-    )
-    F.chamber(1.0, -2.6, 5.6, 2.0, floor=lambda x: -4.1 + 0.12 * np.sin(x * 0.9), k=0.8, wobble=0.25)
-    F.tunnel(
-        [(5.5, -3.3, 1.3), (8.5, -4.6, 1.4), (11.0, -5.8, 1.3), (14.5, -6.4, 1.3)],
-        floor=lambda x: -6.8 + 0.6 * np.tanh(-(x - 7.5) * 0.6) + 0.06 * np.sin(x),
-        wobble=0.18,
-        k=0.7,
-    )
-    F.chamber(-2.0, -7.4, 4.0, 1.25, floor=-8.3, wobble=0.22, k=0.5)
-    F.tunnel([(-4.6, -4.6, 0.9), (-3.4, -6.2, 0.95)], wobble=0.12, k=0.5)
-    F.tunnel([(3.4, -1.0, 0.7), (3.0, 0.4, 0.55), (2.7, 1.6, 0.45)], wobble=0.08, k=0.4)
-    F.build(pocket=3.2, pocket_var=0.7, relief=0.34, edge=0.16)
+    surf = plan.surface(xs)
     ground = F.mesh("terrain", coll)
     mat = shaders.terrain_material(
         "roots.terrain",
         strata=[(0.0, "#2A2018"), (0.35, "#4A3424"), (0.65, "#5E4430"), (0.85, "#4A3626"), (1.0, "#30241A")],
-        z_range=(-9.5, 1.8),
+        z_range=(plan.bounds[2], 1.8),
         cover=("#5A7A2A", "#8AA040"),
         cover_amount=0.6,
         front_dark=0.6,
@@ -783,11 +1007,13 @@ def roots_of_giants(coll, seed=23, res=0.08):
         lichen=("#E8C060", 0.35, 3.0),
     )
     core.set_material(ground, mat)
+    trunk_lm, hall, hollow, grove = (plan.landmark(n) for n in ("trunk", "hall", "hollow", "grove"))
+    crack = next(r for r in plan.routes if r.kind == "light")
 
     bark = shaders.bark_material("roots.bark", dark="#3A2A1E", light="#7E5E40", moss="#5E7A30", scale=2.6)
-    # The giant: a trunk rising out of frame with buttress roots.
-    tx, ty = -3.4, 4.6
-    tz = F.floor_at(tx, ty, 6.0) or 2.0
+    # The giant stands behind the playable pocket, its foot beside the way down.
+    tx, ty = trunk_lm.x - 1.2, 4.8
+    tz = F.floor_at(tx, ty, 6.0) or float(plan.surface(tx))
     trunk = core.loft(
         "roots.trunk",
         [
@@ -802,66 +1028,40 @@ def roots_of_giants(coll, seed=23, res=0.08):
     )
     core.subsurf(trunk, 1)
     core.set_material(trunk, bark)
-    paths = [
-        [
-            (-3.6, 4.2, 2.4, 0.95),
-            (-5.4, 2.6, 0.4, 0.8),
-            (-7.6, 2.2, -1.4, 0.65),
-            (-10.0, 2.4, -2.6, 0.5),
-            (-13.5, 2.6, -3.0, 0.38),
-        ],
-        [
-            (-2.2, 4.0, 2.2, 0.9),
-            (0.0, 2.6, 0.6, 0.75),
-            (2.0, 2.0, -0.6, 0.62),
-            (4.6, 2.3, -1.4, 0.5),
-            (7.8, 2.6, -2.3, 0.42),
-            (11.0, 3.0, -3.4, 0.33),
-            (14.0, 3.0, -4.0, 0.25),
-        ],
-        [
-            (-1.4, 4.6, 1.8, 0.8),
-            (1.6, 3.6, -0.2, 0.55),
-            (3.8, 3.4, -1.8, 0.45),
-            (6.0, 3.6, -3.6, 0.35),
-            (8.0, 3.8, -5.6, 0.28),
-            (9.4, 3.8, -8.5, 0.2),
-        ],
-        [
-            (-4.8, 3.8, 1.6, 0.7),
-            (-5.6, 2.6, -1.6, 0.48),
-            (-4.4, 2.8, -4.2, 0.38),
-            (-2.8, 3.0, -6.6, 0.3),
-            (-1.0, 3.2, -9.0, 0.22),
-        ],
-        [(-2.6, 1.4, -1.2, 0.32), (-0.6, 0.9, -1.7, 0.36), (1.8, 0.8, -1.2, 0.3), (3.8, 1.0, -0.4, 0.22)],
-        [(6.5, 0.9, -2.6, 0.22), (8.4, 1.2, -3.4, 0.3), (10.8, 1.0, -4.3, 0.26), (13.5, 1.2, -4.6, 0.2)],
-    ]
-    for i, p in enumerate(paths):
-        root(f"roots.root{i}", p, coll, bark)
-    # Buttress roots arch over the ground before diving in.
-    for i, p in enumerate(
-        [
-            [
-                (tx - 1.6, ty - 1.2, tz + 1.4, 0.75),
-                (tx - 3.4, ty - 1.6, tz + 0.5, 0.55),
-                (tx - 5.2, ty - 1.8, tz - 0.1, 0.42),
-                (tx - 6.6, ty - 1.6, tz - 1.0, 0.3),
-            ],
-            [
-                (tx + 1.4, ty - 1.3, tz + 1.3, 0.7),
-                (tx + 3.0, ty - 1.9, tz + 0.5, 0.52),
-                (tx + 4.6, ty - 2.2, tz - 0.1, 0.38),
-                (tx + 5.8, ty - 2.2, tz - 0.9, 0.26),
-            ],
-            [
-                (tx - 0.2, ty - 1.6, tz + 1.2, 0.6),
-                (tx - 0.6, ty - 2.6, tz + 0.3, 0.45),
-                (tx - 1.0, ty - 3.2, tz - 0.6, 0.3),
-            ],
+    # Roots run along every walkable route, hugging the ceiling, as if they pushed the hollows open.
+    for i, rt in enumerate(r for r in plan.routes if r.walk):
+        pts = rt.pts[:: max(1, len(rt.pts) // 7)]
+        y = rng.uniform(1.9, 3.0)
+        r0, r1 = rng.uniform(0.45, 0.65), rng.uniform(0.22, 0.32)
+        ctrl = [
+            (
+                p[0],
+                y + rng.normal(0, 0.2),
+                p[1] + rt.radius * 0.6 + rng.normal(0, 0.12),
+                r0 + (r1 - r0) * k / max(1, len(pts) - 1),
+            )
+            for k, p in enumerate(pts)
         ]
-    ):
-        root(f"roots.buttress{i}", p, coll, bark)
+        root(f"roots.root{i}", ctrl, coll, bark)
+    # Two tap roots drop from the trunk through the crust into the hollow.
+    for i, dx in enumerate((-0.8, 0.9)):
+        top = (tx + dx * 1.6, ty - 1.4, tz + 0.6, 0.8)
+        bot = (hollow.x + dx * hollow.rx * 0.6, 2.4, hollow.floor + hollow.rz * 1.2, 0.35)
+        mid = ((top[0] + bot[0]) / 2 + rng.normal(0, 0.4), 2.8, (top[2] + bot[2]) / 2, 0.55)
+        root(f"roots.tap{i}", [top, mid, bot], coll, bark)
+    for i, side in enumerate((-1, 1, -0.2)):
+        b0 = (tx + side * 1.5, ty - 1.3, tz + 1.3, 0.72)
+        pts = [b0]
+        for k in range(1, 4):
+            pts.append(
+                (
+                    b0[0] + side * 1.7 * k + rng.normal(0, 0.2),
+                    ty - 1.3 - 0.35 * k * (1 + abs(side)),
+                    tz + 1.3 - 0.75 * k,
+                    0.72 - 0.15 * k,
+                )
+            )
+        root(f"roots.buttress{i}", pts, coll, bark)
 
     tendril_mat = props.tinted_material("roots.tendril", rough=0.85, sss=0.2)
     in_cave = lambda c, n: c[:, 2] < np.interp(c[:, 0], xs, surf) - 0.6
@@ -943,7 +1143,8 @@ def roots_of_giants(coll, seed=23, res=0.08):
         mask=in_cave,
         sink=0.03,
     )
-    motes = rng.random((120, 3)) * np.array([22, 2.5, 7]) + np.array([-11, 0.6, -8])
+    target, width = frame(sol)
+    motes = rng.random((120, 3)) * np.array([22, 2.5, 7]) + np.array([-11, 0.6, target[2] - 5.0])
     props.instance(
         "roots.motes",
         props.icosphere(0),
@@ -954,18 +1155,23 @@ def roots_of_giants(coll, seed=23, res=0.08):
         coll=coll,
     )
 
-    # Light falls through the shaft beside the trunk.
-    shaft("roots.shaft0", (2.9, 1.9, 1.0), (1.4, 1.9, -4.2), 1.5, coll, color="#FFD890", strength=0.45)
-    shaft("roots.shaft1", (3.2, 2.1, 0.9), (2.4, 2.1, -4.2), 0.8, coll, color="#FFD890", strength=0.35)
+    # Light falls down the generated crack into the hollow.
+    (bx, _), (cx, cz) = crack.pts[0], crack.pts[-1]
+    floor_z = hollow.floor
+    shaft("roots.shaft0", (cx, 1.9, cz - 0.6), (bx - 0.6, 1.9, floor_z), 1.5, coll, color="#FFD890", strength=0.45)
+    shaft(
+        "roots.shaft1", (cx + 0.3, 2.1, cz - 0.7), (bx + 0.4, 2.1, floor_z), 0.8, coll, color="#FFD890", strength=0.35
+    )
+    tilt = math.degrees(math.atan2(cx - bx, cz - floor_z))
     core.light(
         "roots.shaft_light",
         "SPOT",
-        (3.0, 1.8, 2.5),
+        (cx, 1.8, cz + 0.5),
         900,
         color="#FFE0A0",
         size=0.3,
         spot=(28, 0.6),
-        rotation=(0, 12, 0),
+        rotation=(0, tilt, 0),
         coll=coll,
     )
 
@@ -974,16 +1180,26 @@ def roots_of_giants(coll, seed=23, res=0.08):
         "roots.sun", "SUN", (0, 0, 20), 3.0, color="#FFEAC0", size=math.radians(2), rotation=(40, 20, 0), coll=coll
     )
     core.light(
-        "roots.cave_fill", "AREA", (0.0, -6.0, -4.0), 520, color="#B8C8A0", size=16, rotation=(90, 0, 0), coll=coll
+        "roots.cave_fill",
+        "AREA",
+        (0.0, -6.0, target[2] - 1.5),
+        520,
+        color="#B8C8A0",
+        size=16,
+        rotation=(90, 0, 0),
+        coll=coll,
     )
-    for i, (x, y, z) in enumerate([(-9.0, 1.2, -2.6), (-2.0, 1.4, -7.4), (9.4, 1.2, -5.2), (-5.5, 1.4, -0.4)]):
-        core.light(f"roots.fungus_light{i}", "POINT", (x, y, z), 140, color="#FFC060", size=0.4, coll=coll)
+    for i, lm in enumerate(lm for lm in plan.landmarks if lm.role not in ("surface",)):
+        core.light(
+            f"roots.fungus_light{i}", "POINT", (lm.x, 1.3, lm.floor + 0.9), 140, color="#FFC060", size=0.4, coll=coll
+        )
+    s_mean = float(np.mean(plan.surface(np.linspace(*VIEW_X, 40))))
     hill_layer(
         "roots.far",
         rng,
         (-40, 40),
         36.0,
-        screen_z(3.6, 36.0),
+        screen_z(s_mean + 2.0, 36.0),
         0.8,
         3.0,
         "#9FC0A8",
@@ -995,7 +1211,7 @@ def roots_of_giants(coll, seed=23, res=0.08):
         rng,
         (-40, 40),
         20.0,
-        screen_z(2.8, 20.0),
+        screen_z(s_mean + 1.2, 20.0),
         0.7,
         1.8,
         "#6E9A78",
@@ -1003,12 +1219,12 @@ def roots_of_giants(coll, seed=23, res=0.08):
         bumps=[(9, 1.0, 1.4), (-9, 1.2, 1.2)],
     )
 
-    sc = Scene("roots_of_giants", F, camera_target=(0.0, 1.5, -1.9), width=22.0)
-    sc.details = [("root_hall", (0.6, 1.5, -2.4), 7.5)]
-    sc.cast = [
-        ("pathfinder", "run", -9.6, 1.35, -1.5, -20.0),
-        ("prospector", "idle", 0.4, 1.3, -1.5, -32.0),
-        ("warden", "guard", 9.6, 1.2, -4.0, -150.0),
-    ]
+    sc = Scene("roots_of_giants", F, camera_target=target, width=width, solution=sol)
     sc.post = dict(bloom=0.45, vignette=0.3)
+    sc.cast = [
+        ("pathfinder", "run", grove.x - 0.3 * grove.rx, 1.35, grove.floor + 1.2, -20.0),
+        ("prospector", "idle", bx - 0.5, 1.3, hollow.floor + 1.2, -32.0),
+        ("warden", "guard", hall.x + 0.3 * hall.rx, 1.2, hall.floor + 1.2, -150.0),
+    ]
+    sc.details = [("root_hall", (bx, 1.5, hollow.floor + 1.5), 7.5)]
     return sc

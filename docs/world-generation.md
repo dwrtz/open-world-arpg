@@ -33,4 +33,6 @@ Player traversal needs clearance, jump/climb constraints, hazard checks, and rec
 
 The Blender side-view study uses edge-compatible WFC to solve solid/air contours around a macro cave scaffold, followed by 3D terrain construction and biome dressing. Seeded checks establish local compatibility and air connectivity.
 
+The repository's [`worldgen` module](../assets/blender/wylden/worldgen.py) applies this hierarchy to the three concept biomes. Biome rules grow landmarks and walkable routes, and WFC solves the contours on 0.75 m tiles. Seeded checks then confirm tile compatibility, that every routed landmark can be reached on foot, and that sealed discoveries stay sealed. Each render writes its plan, solver attempts, and check results alongside the image. The checks use a coarse 2D movement model within one scene window, not the game's traversal or streaming.
+
 Next, integrate character traversal, collision, mining, and persistent edits with the side-view geometry. Validate real-phone performance, streaming seams, and selected material behaviors in the playable client.

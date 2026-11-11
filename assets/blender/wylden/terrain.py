@@ -1,11 +1,11 @@
 """Side-view cross-section terrain from a scalar material field.
 
-The world plan is a 2D solid/air field in the playable plane (x, z), built
-from a surface line and cavern primitives. Depth (y) is added for visual form
-only: the playable pocket keeps the 2D contour near the front, gains relief
-further back, and closes against a back wall. Marching cubes turns the field
-into one organic mesh, so contours, collision and dressing all derive from
-the same state.
+The playable plane (x, z) comes from a solved world (worldgen.Solution): the
+WFC sub-cells are smoothed into a signed field and resampled at mining-cell
+resolution. Depth (y) is added for visual form only: the playable pocket
+keeps the 2D contour near the front, gains relief further back, and closes
+against a back wall. Marching cubes turns the field into one organic mesh, so
+contours, collision and dressing all derive from the same state.
 
 Positive field values are solid. The camera sits at -Y looking into +Y.
 """
@@ -56,9 +56,9 @@ class Field:
         self.zs = np.arange(z_range[0], z_range[1] + 1e-6, res)
         self.ys = np.arange(y_range[0], y_range[1] + 1e-6, res)
         self.X2, self.Z2 = np.meshgrid(self.xs, self.zs, indexing="ij")
-        self.air = np.full(self.X2.shape, 1e3)
+        self.plan = None
         self.surface = None
-        self.solid_extra = np.full(self.X2.shape, -1e3)
+        self.solution = None
         self.F = None
 
     # -- noise ---------------------------------------------------------------
@@ -86,43 +86,20 @@ class Field:
             big = np.pad(big, pad, mode="edge")
         return (big / (big.std() + 1e-9)).astype(np.float32)
 
-    # -- plan primitives ------------------------------------------------------
+    # -- plan ------------------------------------------------------------------
 
-    def set_surface(self, heights):
-        """heights: array over xs of the ground line z."""
-        self.surface = np.asarray(heights)
+    def from_solution(self, sol, sigma=1.0):
+        """Adopt a solved world: its smoothed WFC sub-cells become the 2D plan field."""
+        from scipy.interpolate import RegularGridInterpolator
 
-    def tunnel(self, points, floor=None, k=0.8, wobble=0.25, aspect=1.0):
-        """Carve air along a spline of (x, z, radius) points. floor flattens the bottom."""
-        pts = catmull(points, step=0.15)
-        d = np.full(self.X2.shape, 1e3)
-        for x, z, r in pts:
-            dd = np.sqrt(((self.X2 - x) / aspect) ** 2 + (self.Z2 - z) ** 2) - r
-            d = np.minimum(d, dd)
-        if wobble:
-            d = d + wobble * (0.7 * self.noise2(1.6) + 0.3 * self.noise2(0.5))
-        if floor is not None:
-            fz = floor(self.xs)[:, None] if callable(floor) else floor
-            d = np.maximum(d, fz - self.Z2)
-        self.air = smin(self.air, d, k)
-
-    def chamber(self, cx, cz, rx, rz, floor=None, k=1.0, wobble=0.35):
-        dx, dz = (self.X2 - cx) / rx, (self.Z2 - cz) / rz
-        d = (np.sqrt(dx * dx + dz * dz) - 1.0) * min(rx, rz)
-        if wobble:
-            d = d + wobble * (0.65 * self.noise2(2.0) + 0.35 * self.noise2(0.6))
-        if floor is not None:
-            fz = floor(self.xs)[:, None] if callable(floor) else floor
-            d = np.maximum(d, fz - self.Z2 + 0.08 * self.noise2(1.2))
-        self.air = smin(self.air, d, k)
-
-    def solid_blob(self, points):
-        """Add solid back (pillars, ledges) along a spline of (x, z, r)."""
-        pts = catmull(points, step=0.15)
-        d = np.full(self.X2.shape, 1e3)
-        for x, z, r in pts:
-            d = np.minimum(d, np.sqrt((self.X2 - x) ** 2 + (self.Z2 - z) ** 2) - r)
-        self.solid_extra = np.maximum(self.solid_extra, -d + 0.15 * self.noise2(0.8))
+        signed = sol.signed(sigma)  # [z, x], metres
+        interp = RegularGridInterpolator((sol.zs, sol.xs), signed, bounds_error=False, fill_value=None)
+        pts = np.stack([self.Z2.ravel(), self.X2.ravel()], axis=1)
+        self.plan = interp(pts).reshape(self.X2.shape)
+        if sol.plan.surface is not None:
+            self.surface = sol.plan.surface(self.xs)
+        self.solution = sol
+        return self
 
     # -- build ------------------------------------------------------------------
 
@@ -137,9 +114,7 @@ class Field:
         surface_open_back=True,
     ):
         G = (self.surface[:, None] - self.Z2) if self.surface is not None else np.full(self.X2.shape, 1e3)
-        S2 = smin(G, self.air, 0.5)
-        S2 = smax(S2, self.solid_extra, 0.3)
-        S2 = S2 + edge * (0.6 * self.noise2(0.9) + 0.4 * self.noise2(0.3))
+        S2 = self.plan + edge * (0.6 * self.noise2(0.9) + 0.4 * self.noise2(0.3))
         self.S2 = S2
         Y = self.ys[None, :, None]
         ramp = np.clip(Y / max(pocket, 1e-3), 0.25, 1.0)

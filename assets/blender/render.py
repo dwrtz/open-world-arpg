@@ -7,11 +7,16 @@ Usage (with the `bpy` module from PyPI, or Blender's own Python):
     python assets/blender/render.py loadouts --out assets/renders/concept
     python assets/blender/render.py moss_and_ember --out assets/renders/concept
     python assets/blender/render.py all --out assets/renders/concept --quality final
+    python assets/blender/render.py opal_deep --plan-only
 
-Every image is rebuilt from scripts and seeds; nothing is hand-placed.
+Every image is rebuilt from scripts and seeds. Biome layouts come from
+worldgen (landmark growth, WFC contours, validation); each biome render also
+writes <biome>_worldgen.json and <biome>_worldgen.png describing the solved
+world. --plan-only writes those two files without building the 3D scene.
 """
 
 import argparse
+import json
 import math
 import sys
 import time
@@ -21,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import bpy  # noqa: E402
 
-from wylden import biomes, core, explorers, poses, rig  # noqa: E402
+from wylden import biomes, core, explorers, poses, rig, worldgen  # noqa: E402
 
 QUALITY = {
     "draft": dict(scale=0.5, samples=24),
@@ -134,12 +139,75 @@ def render_loadouts(out, q):
     core.post_process(p, bloom=0.25, vignette=0.25)
 
 
+RULES = {
+    "moss_and_ember": dict(rules=biomes.moss_rules, seed=7, start="surface"),
+    "opal_deep": dict(rules=biomes.opal_rules, seed=11, start="exit", water=biomes.opal_water),
+    "roots_of_giants": dict(rules=biomes.roots_rules, seed=23, start="surface"),
+}
+
+
+def write_worldgen(name, sol, out):
+    """Report and diagnostic for a solved world: plan, WFC solution and validation results."""
+    plan, r = sol.plan, sol.report
+    report = dict(
+        biome=name,
+        plan_seed=plan.seed,
+        tile_m=r["tile_m"],
+        cell_m=r["cell_m"],
+        grid_tiles=r["grid"],
+        tile_patterns=r["tiles"],
+        attempts=[{k: v for k, v in e.items() if k != "landmarks"} for e in r["log"]],
+        landmarks=[
+            dict(
+                name=lm.name,
+                role=lm.role,
+                x=round(lm.x, 2),
+                floor=round(lm.floor, 2),
+                rx=round(lm.rx, 2),
+                rz=round(lm.rz, 2),
+                reachable=r["landmarks"][lm.name]["reachable"],
+                air_connected=r["landmarks"][lm.name]["air_connected"],
+                routed=lm.connect,
+            )
+            for lm in plan.landmarks
+        ],
+        routes=[
+            dict(
+                a=rt.a,
+                b=rt.b,
+                kind=rt.kind,
+                walk=rt.walk,
+                radius=round(rt.radius, 2),
+                length_m=round(float(sum(((rt.pts[1:] - rt.pts[:-1]) ** 2).sum(1) ** 0.5)), 1),
+            )
+            for rt in plan.routes
+        ],
+        checks=dict(
+            tiles_compatible=r["compatible"],
+            sealed_intact=r["sealed_intact"],
+            valid=r["valid"],
+            islands_removed=r["islands_removed"],
+            standable_cells=r["standable_cells"],
+            reached_cells=r["reached_cells"],
+        ),
+    )
+    (out / f"{name}_worldgen.json").write_text(json.dumps(report, indent=2, default=float) + "\n")
+    worldgen.diagnostic(sol, out / f"{name}_worldgen.png", title=f"{name} · plan seed {plan.seed}")
+
+
+def plan_only(name, out):
+    spec = RULES[name]
+    sol = worldgen.solve(spec["rules"], spec["seed"], water_fn=spec.get("water"), start_role=spec["start"], plans=40)
+    write_worldgen(name, sol, out)
+
+
 def render_biome(name, out, q):
     core.reset_scene()
     coll = core.collection(name)
     t = time.time()
     sc = getattr(biomes, name)(coll)
     print(f"[{name}] environment built in {time.time() - t:.1f}s")
+    write_worldgen(name, sc.solution, out)
     for kind, pose, x, y, z_from, yaw in sc.cast:
         z = sc.field.floor_at(x, y, z_from)
         B = explorers.explorer(kind, name=f"{name}.{kind}", location=(x, y, z - 0.02), yaw=yaw)
@@ -175,6 +243,7 @@ def main(argv):
     ap.add_argument("target", choices=list(TARGETS) + list(BIOMES) + ["all"])
     ap.add_argument("--out", default="assets/renders/concept")
     ap.add_argument("--quality", choices=list(QUALITY), default="draft")
+    ap.add_argument("--plan-only", action="store_true", help="write worldgen reports for biomes without rendering")
     a = ap.parse_args(argv)
     out = Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -182,6 +251,10 @@ def main(argv):
     names = list(TARGETS) + list(BIOMES) if a.target == "all" else [a.target]
     for n in names:
         t = time.time()
+        if a.plan_only:
+            if n in RULES:
+                plan_only(n, out)
+            continue
         if n in TARGETS:
             TARGETS[n](out, q)
         else:
