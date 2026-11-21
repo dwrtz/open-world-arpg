@@ -1,10 +1,11 @@
 """Opal cluster: faceted crystal spires growing from a deepstone base (the Opal Deep).
 
-build(seed=5)
+build(seed=5, emit=0.55)
 
 Each spire is a six-sided prism that swells slightly toward its shoulder and ends in a
 pointed pyramid. Facets get deliberate shade steps by which way they face, the root of
 each spire is a second opal hue (the play of colour), and the tips are white-hot.
+`emit` is the glow of the spire bodies (the palette default burns the facets out).
 """
 import math
 

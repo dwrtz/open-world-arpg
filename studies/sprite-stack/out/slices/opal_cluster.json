@@ -1,0 +1,39 @@
+{
+ "name": "opal_cluster",
+ "size": [
+  26,
+  26
+ ],
+ "layers": 30,
+ "cols": 6,
+ "rows": 5,
+ "pivot": [
+  12.8,
+  12.8
+ ],
+ "voxels": 3587,
+ "materials": [
+  "opal_teal",
+  "opal_pink",
+  "opal_lilac",
+  "deepstone",
+  "opal_white"
+ ],
+ "lights": [
+  {
+   "pos": [
+    13.0,
+    12.3,
+    10.0
+   ],
+   "rgb": [
+    0.52,
+    0.82,
+    1.0
+   ],
+   "radius": 32,
+   "power": 1.0
+  }
+ ],
+ "sockets": {}
+}

@@ -1,0 +1,40 @@
+{
+ "name": "giant_root",
+ "size": [
+  44,
+  24
+ ],
+ "layers": 36,
+ "cols": 5,
+ "rows": 8,
+ "pivot": [
+  22.0,
+  12.0
+ ],
+ "voxels": 6043,
+ "materials": [
+  "bark",
+  "bark_dark",
+  "heartwood",
+  "amber",
+  "moss",
+  "fern"
+ ],
+ "lights": [
+  {
+   "pos": [
+    9.105727974057265,
+    21.387064360470667,
+    15.511646739716475
+   ],
+   "rgb": [
+    1.0,
+    0.68,
+    0.28
+   ],
+   "radius": 22,
+   "power": 0.9
+  }
+ ],
+ "sockets": {}
+}

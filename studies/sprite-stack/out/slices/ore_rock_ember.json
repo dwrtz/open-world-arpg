@@ -1,0 +1,39 @@
+{
+ "name": "ore_rock_ember",
+ "size": [
+  24,
+  22
+ ],
+ "layers": 18,
+ "cols": 5,
+ "rows": 4,
+ "pivot": [
+  12.0,
+  11.3
+ ],
+ "voxels": 2905,
+ "materials": [
+  "basalt",
+  "ember_dim",
+  "ore_ember",
+  "ember_hot",
+  "moss"
+ ],
+ "lights": [
+  {
+   "pos": [
+    12.0,
+    19.3,
+    8.0
+   ],
+   "rgb": [
+    1.0,
+    0.5,
+    0.2
+   ],
+   "radius": 28,
+   "power": 1.0
+  }
+ ],
+ "sockets": {}
+}

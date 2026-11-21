@@ -1,0 +1,41 @@
+{
+ "name": "chest",
+ "size": [
+  22,
+  16
+ ],
+ "layers": 18,
+ "cols": 4,
+ "rows": 5,
+ "pivot": [
+  11.0,
+  8.0
+ ],
+ "voxels": 3166,
+ "materials": [
+  "glint",
+  "coin",
+  "wood_dark",
+  "wood",
+  "brass",
+  "iron_dark",
+  "eye"
+ ],
+ "lights": [
+  {
+   "pos": [
+    11.0,
+    11.0,
+    11.5
+   ],
+   "rgb": [
+    1.0,
+    0.76,
+    0.34
+   ],
+   "radius": 20,
+   "power": 0.9
+  }
+ ],
+ "sockets": {}
+}

@@ -53,7 +53,7 @@ def _lump(v, c, r, n, rng, lo=0.82, hi=1.0, closed=False):
     # few planes leave long corners; round those off just outside the guide ellipsoid
     ex, ey, ez = (v.x - c[0]) / r[0], (v.y - c[1]) / r[1], (v.z - c[2]) / r[2]
     en = np.sqrt(ex * ex + ey * ey + ez * ez)
-    e = (1.15 - en) * min(r)
+    e = (1.2 - en) * min(r)
     m = e < depth
     depth = np.where(m, e, depth)
     rn = np.stack([ex / r[0], ey / r[1], ez / r[2]], -1)
@@ -140,6 +140,7 @@ def build(kind='copper', seed=None):
         r = (2.8, 2.2, 2.5, 2.0, 2.4, 2.1, 2.3)[i % 7]
         flush |= v.m_ellipsoid(p, (r + (edge - 0.5) * 1.4,) * 3) & rock & (depth < 2.2)
         q = p + out * 0.7
+        q[:2] = np.clip(q[:2], 3.2, (DIMS[0] - 3.2, DIMS[1] - 3.2))    # keep the nugget whole inside the volume
         h = r * 0.8
         d, _n = _lump(v, q, (h, h, h), 8, np.random.default_rng(seed + 40 + i), lo=0.75, hi=1.0, closed=True)
         proud |= (d > 0) & v.m_ellipsoid(q, (h * 1.35,) * 3)

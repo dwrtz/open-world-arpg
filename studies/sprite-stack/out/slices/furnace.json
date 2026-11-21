@@ -1,0 +1,46 @@
+{
+ "name": "furnace",
+ "size": [
+  30,
+  26
+ ],
+ "layers": 36,
+ "cols": 6,
+ "rows": 6,
+ "pivot": [
+  15.0,
+  12.5
+ ],
+ "voxels": 10095,
+ "materials": [
+  "iron_black",
+  "stone_dark",
+  "basalt",
+  "iron_dark",
+  "iron",
+  "ember_dim",
+  "ember",
+  "ember_hot",
+  "coal",
+  "steel",
+  "moss",
+  "moss_light"
+ ],
+ "lights": [
+  {
+   "pos": [
+    15.0,
+    27.0,
+    7.0
+   ],
+   "rgb": [
+    1.0,
+    0.55,
+    0.22
+   ],
+   "radius": 34,
+   "power": 1.4
+  }
+ ],
+ "sockets": {}
+}

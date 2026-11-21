@@ -1,0 +1,47 @@
+{
+ "name": "explorer_warden",
+ "size": [
+  28,
+  22
+ ],
+ "layers": 36,
+ "cols": 6,
+ "rows": 6,
+ "pivot": [
+  12.5,
+  11.0
+ ],
+ "voxels": 2965,
+ "materials": [
+  "leather_dark",
+  "cloth_green",
+  "brass",
+  "skin_tan",
+  "hair_red",
+  "eye",
+  "cloth_cream",
+  "wood_light",
+  "cloth_red",
+  "leather",
+  "petal",
+  "steel"
+ ],
+ "lights": [],
+ "sockets": {
+  "hand": [
+   17.3,
+   18.8,
+   11.8
+  ],
+  "head": [
+   12.5,
+   11.0,
+   25.0
+  ],
+  "back": [
+   7.5,
+   11.0,
+   13.0
+  ]
+ }
+}

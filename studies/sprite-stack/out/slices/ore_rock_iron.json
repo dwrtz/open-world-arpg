@@ -1,0 +1,24 @@
+{
+ "name": "ore_rock_iron",
+ "size": [
+  24,
+  22
+ ],
+ "layers": 18,
+ "cols": 5,
+ "rows": 4,
+ "pivot": [
+  12.0,
+  11.3
+ ],
+ "voxels": 2970,
+ "materials": [
+  "stone_dark",
+  "ore_iron",
+  "rust",
+  "moss",
+  "moss_light"
+ ],
+ "lights": [],
+ "sockets": {}
+}

@@ -1,0 +1,62 @@
+{
+ "name": "explorer_delver",
+ "size": [
+  28,
+  22
+ ],
+ "layers": 36,
+ "cols": 6,
+ "rows": 6,
+ "pivot": [
+  12.5,
+  11.0
+ ],
+ "voxels": 3154,
+ "materials": [
+  "leather_dark",
+  "cloth_dark",
+  "brass",
+  "skin_dark",
+  "hair_black",
+  "eye",
+  "cloth_teal",
+  "opal_teal",
+  "copper",
+  "iron_dark",
+  "cloth_purple",
+  "lamp"
+ ],
+ "lights": [
+  {
+   "pos": [
+    20,
+    19,
+    8.5
+   ],
+   "rgb": [
+    1.0,
+    0.72,
+    0.36
+   ],
+   "radius": 36,
+   "power": 1.6
+  }
+ ],
+ "sockets": {
+  "hand": [
+   17.3,
+   18.8,
+   11.8
+  ],
+  "head": [
+   12.5,
+   11.0,
+   25.0
+  ],
+  "back": [
+   7.5,
+   11.0,
+   13.0
+  ]
+ }
+}

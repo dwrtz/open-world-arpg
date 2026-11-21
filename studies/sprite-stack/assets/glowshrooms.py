@@ -1,10 +1,11 @@
 """Glowshrooms: glowing cave mushrooms on a mossy rock mound.
 
-build(seed=7)
+build(seed=7, cap_emit=0.5)
 
 One tall mushroom with a broad domed cap leans over four smaller ones. Caps are hollow
 domes tipped slightly toward the camera so their spotted tops show in the side view;
 the undersides are dark gills, lit by a teal light that hangs under the big cap.
+`cap_emit` is the glow of the cap skin (the spots keep the palette's stronger glow).
 """
 import math
 
@@ -95,8 +96,8 @@ def _shroom(v, S, rng, wob):
     v.paint(cap, shade=-1)
     v.paint(cap & (lz > H * 0.62), shade=0)                            # lit crown
     v.paint(cap & (lz < H * 0.22), shade=-2)                           # rim band
-    v.paint(under, mat='shroom_gill', shade=0)
-    v.paint(under & (np.sqrt((lx / Rx) ** 2 + (ly / Ry) ** 2) > 0.86), mat='shroom_cap', shade=-2)
+    v.paint(under, shade=-3)                                           # gills
+    v.paint(under & (np.sqrt((lx / Rx) ** 2 + (ly / Ry) ** 2) > 0.86), shade=-2)
     v.paint(stem & hollow & (lz > -2.5), shade=-1)                     # stem neck in the cap's shade
 
     # spots: round dots on the upper dome
@@ -130,7 +131,7 @@ def _fern(v, base, fronds, rng, length=5.0, start=0.0):
         v.add(v.m_capsule(b, mid, 0.8, 0.75), 'fern', shade=-1)
         m2 = v.m_capsule(mid, tip, 0.75, 0.5) & ~v.occ
         v.fill(m2, 'fern', shade=0)
-        v.paint(m2 & v.m_ellipsoid(tip, (1.3, 1.3, 1.3)), mat='leaf', shade=1)
+        v.paint(m2 & v.m_ellipsoid(tip, (1.3, 1.3, 1.3)), shade=2)
 
 
 def _grass(v, base, rng, n=5, spread=1.6):
@@ -144,15 +145,14 @@ def _grass(v, base, rng, n=5, spread=1.6):
         if z0 > 7:
             continue
         blade = col & (v.z >= z0) & (v.z < z0 + h)
-        v.add(blade, 'grass', shade=0)
-        v.paint(blade & (v.z > z0 + h - 1.2), shade=1)
+        v.add(blade, 'fern', shade=1)
+        v.paint(blade & (v.z > z0 + h - 1.2), shade=2)
 
 
 def build(seed=7, cap_emit=0.5):
     rng = np.random.default_rng(seed)
     v = Vox(*DIMS, name='glowshrooms')
     v.pivot = (13.0, 12.0)
-    v.mat('shroom_gill', rgb=(34, 104, 116), emit=0.25)
     # a whole cap at full glow burns out to white; the spots keep the strong glow
     v.mat('shroom_cap', emit=cap_emit)
 
@@ -177,7 +177,7 @@ def build(seed=7, cap_emit=0.5):
     lip &= v.m_surface() & rock & (mn > 0.5)
     v.paint(moss, mat='moss', shade=0)
     v.paint(lip, mat='moss', shade=-1)
-    v.paint(moss & (v.noise(4.5, seed + 2) > 0.62), mat='moss_light')
+    v.paint(moss & (v.noise(4.5, seed + 2) > 0.62), shade=1)           # sunlit-looking tufts
 
     # --- mushrooms ------------------------------------------------------------------------
     wob = v.noise(6, seed + 3)

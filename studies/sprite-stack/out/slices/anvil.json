@@ -1,0 +1,48 @@
+{
+ "name": "anvil",
+ "size": [
+  24,
+  18
+ ],
+ "layers": 20,
+ "cols": 4,
+ "rows": 5,
+ "pivot": [
+  11.0,
+  8.0
+ ],
+ "voxels": 2449,
+ "materials": [
+  "bark",
+  "bark_dark",
+  "heartwood",
+  "wood_light",
+  "wood_dark",
+  "iron_dark",
+  "iron",
+  "coal",
+  "moss",
+  "moss_light",
+  "leather_dark",
+  "ember",
+  "ember_hot",
+  "ember_dim"
+ ],
+ "lights": [
+  {
+   "pos": [
+    10.5,
+    9.5,
+    21.0
+   ],
+   "rgb": [
+    1.0,
+    0.58,
+    0.24
+   ],
+   "radius": 20,
+   "power": 0.8
+  }
+ ],
+ "sockets": {}
+}

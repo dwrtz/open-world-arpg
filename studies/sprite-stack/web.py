@@ -39,10 +39,10 @@ def stats():
             continue
         seen.add(label)
         v = assets.build(name, **params)
-        lo, hi = v.bounds()
-        w, d, layers = hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]
-        rows.append(dict(label=label.title(), w=int(w), d=int(d), layers=int(layers), voxels=v.count(),
-                         sheet_kb=round(w * d * layers * 4 / 1024, 1)))
+        Z, Y, X = v.idx.shape
+        layers = int(v.occ.any(axis=(1, 2)).sum())
+        rows.append(dict(label=label.title(), w=int(X), d=int(Y), layers=layers, voxels=v.count(),
+                         sheet_kb=round(X * Y * layers * 4 / 1024, 1)))
     with open(os.path.join(DST, 'stats.json'), 'w') as f:
         json.dump(rows, f, indent=1)
     return rows

@@ -1,0 +1,40 @@
+{
+ "name": "glowshrooms",
+ "size": [
+  26,
+  24
+ ],
+ "layers": 28,
+ "cols": 6,
+ "rows": 5,
+ "pivot": [
+  13.0,
+  12.0
+ ],
+ "voxels": 3477,
+ "materials": [
+  "shroom_cap",
+  "stone_dark",
+  "moss",
+  "shroom_stem",
+  "shroom_spot",
+  "fern"
+ ],
+ "lights": [
+  {
+   "pos": [
+    12.6,
+    13.6,
+    15.0
+   ],
+   "rgb": [
+    0.3,
+    0.95,
+    0.85
+   ],
+   "radius": 28,
+   "power": 1.0
+  }
+ ],
+ "sockets": {}
+}

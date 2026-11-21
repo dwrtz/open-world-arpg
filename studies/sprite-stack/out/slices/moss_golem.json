@@ -1,0 +1,40 @@
+{
+ "name": "moss_golem",
+ "size": [
+  28,
+  26
+ ],
+ "layers": 40,
+ "cols": 7,
+ "rows": 6,
+ "pivot": [
+  12.5,
+  13.0
+ ],
+ "voxels": 7005,
+ "materials": [
+  "basalt",
+  "ember",
+  "ember_hot",
+  "moss",
+  "moss_light",
+  "ember_dim"
+ ],
+ "lights": [
+  {
+   "pos": [
+    24.5,
+    13.0,
+    22.5
+   ],
+   "rgb": [
+    1.0,
+    0.52,
+    0.2
+   ],
+   "radius": 30,
+   "power": 1.4
+  }
+ ],
+ "sockets": {}
+}

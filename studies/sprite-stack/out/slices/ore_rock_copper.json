@@ -1,0 +1,24 @@
+{
+ "name": "ore_rock_copper",
+ "size": [
+  24,
+  22
+ ],
+ "layers": 18,
+ "cols": 5,
+ "rows": 4,
+ "pivot": [
+  12.0,
+  11.3
+ ],
+ "voxels": 3276,
+ "materials": [
+  "stone",
+  "ore_copper",
+  "verdigris",
+  "moss",
+  "moss_light"
+ ],
+ "lights": [],
+ "sockets": {}
+}

@@ -3,8 +3,8 @@ ground and back in; the opening runs along x, so the arch reads from the +y side
 
 build(seed=4)
 
-The root is a variable-radius tube along a spline with two thinner strands wound round
-it (the gnarl), nudged by noise. Bark gets twisted longitudinal grooves, dark seams
+The root is a variable-radius tube along a spline with three thinner strands wound round
+it and a few burls (the gnarl), nudged by noise. Bark gets twisted longitudinal grooves, dark seams
 where the strands meet the trunk, and a few knots. A side root is snapped off toward the
 camera showing pale heartwood, and amber sap bleeds from it with a small warm light.
 """
@@ -100,7 +100,7 @@ def _fern(v, base, fronds, rng, length=5.0, start=0.0, arc=2 * math.pi):
         v.add(v.m_capsule(b, mid, 0.8, 0.75), 'fern', shade=-1)
         m2 = v.m_capsule(mid, tip, 0.75, 0.5) & ~v.occ
         v.fill(m2, 'fern', shade=0)
-        v.paint(m2 & v.m_ellipsoid(tip, (1.3, 1.3, 1.3)), mat='leaf', shade=1)
+        v.paint(m2 & v.m_ellipsoid(tip, (1.3, 1.3, 1.3)), shade=2)
 
 
 def build(seed=4):
@@ -214,11 +214,13 @@ def build(seed=4):
 
     # --- earth at the feet, moss, ferns -------------------------------------------------------
     mn = v.noise(5.5, seed + 4)
+    soil = np.zeros(v.idx.shape, bool)
     for (ex, ey, er) in ((7.0, 12.0, (6.4, 9.4, 3.4)), (37.2, 12.2, (6.0, 9.4, 3.2))):
         earth = v.m_ellipsoid((ex, ey, -0.4 + (mn - 0.5) * 1.6), er) & ~v.occ
-        v.fill(earth, 'dirt_dark', shade=0)
-    v.paint(v.is_mat('dirt_dark') & (v.z < 1), shade=-1)
-    moss = v.m_exposed_top() & v.is_mat('dirt_dark') & (mn > 0.36)
+        v.fill(earth, 'bark_dark', shade=-1)
+        soil |= earth
+    v.paint(soil & (v.z < 1), shade=-2)
+    moss = v.m_exposed_top() & soil & (mn > 0.36)
     v.paint(moss, mat='moss', shade=0)
     # moss creeping up the feet and capping the crown of the arch
     feet = v.m_exposed_top(2) & v.is_mat('bark', 'bark_dark') & (v.z < 9) & (mn > 0.52)
@@ -227,7 +229,7 @@ def build(seed=4):
     v.paint(feet | crown, mat='moss', shade=0)
     hang = np.zeros_like(crown); hang[:-1] = crown[1:]
     v.paint(hang & v.m_surface() & v.is_mat('bark', 'bark_dark') & (v.y > CY), mat='moss', shade=-1)
-    v.paint(v.is_mat('moss') & v.m_exposed_top() & (v.noise(4, seed + 6) > 0.6), mat='moss_light')
+    v.paint(v.is_mat('moss') & v.m_exposed_top() & (v.noise(4, seed + 6) > 0.6), shade=1)
 
     _fern(v, (3.6, 20.6, 0.8), 4, rng, length=5.0, start=1.2)
     _fern(v, (13.4, 21.0, 0.5), 3, rng, length=4.2, start=0.2, arc=math.pi)

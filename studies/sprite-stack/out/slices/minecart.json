@@ -1,0 +1,27 @@
+{
+ "name": "minecart",
+ "size": [
+  28,
+  18
+ ],
+ "layers": 20,
+ "cols": 4,
+ "rows": 5,
+ "pivot": [
+  14.0,
+  9.0
+ ],
+ "voxels": 3221,
+ "materials": [
+  "wood_dark",
+  "iron",
+  "iron_dark",
+  "wood",
+  "stone",
+  "ore_copper",
+  "ore_gold",
+  "opal_teal"
+ ],
+ "lights": [],
+ "sockets": {}
+}

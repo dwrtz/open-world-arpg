@@ -1,0 +1,42 @@
+{
+ "name": "scarab",
+ "size": [
+  30,
+  24
+ ],
+ "layers": 18,
+ "cols": 4,
+ "rows": 5,
+ "pivot": [
+  14.0,
+  12.0
+ ],
+ "voxels": 2647,
+ "materials": [
+  "shell",
+  "chitin",
+  "seamglow",
+  "bone",
+  "shroom_spot",
+  "opal_teal",
+  "opal_white",
+  "opal_pink"
+ ],
+ "lights": [
+  {
+   "pos": [
+    10.5,
+    12.0,
+    16.0
+   ],
+   "rgb": [
+    0.38,
+    0.95,
+    0.88
+   ],
+   "radius": 22,
+   "power": 0.8
+  }
+ ],
+ "sockets": {}
+}

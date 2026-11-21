@@ -1,0 +1,63 @@
+{
+ "name": "explorer_prospector",
+ "size": [
+  28,
+  22
+ ],
+ "layers": 36,
+ "cols": 6,
+ "rows": 6,
+ "pivot": [
+  12.5,
+  11.0
+ ],
+ "voxels": 3272,
+ "materials": [
+  "leather_dark",
+  "cloth_blue",
+  "brass",
+  "skin",
+  "hair_brown",
+  "eye",
+  "cloth_red",
+  "leather",
+  "cloth_cream",
+  "iron_dark",
+  "lamp",
+  "wood",
+  "steel"
+ ],
+ "lights": [
+  {
+   "pos": [
+    23,
+    11.0,
+    27.5
+   ],
+   "rgb": [
+    1.0,
+    0.86,
+    0.55
+   ],
+   "radius": 30,
+   "power": 1.1
+  }
+ ],
+ "sockets": {
+  "hand": [
+   17.3,
+   18.8,
+   11.8
+  ],
+  "head": [
+   12.5,
+   11.0,
+   25.0
+  ],
+  "back": [
+   7.5,
+   11.0,
+   13.0
+  ]
+ }
+}

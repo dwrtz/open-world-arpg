@@ -1,0 +1,23 @@
+{
+ "name": "ore_rock_gold",
+ "size": [
+  24,
+  22
+ ],
+ "layers": 18,
+ "cols": 5,
+ "rows": 4,
+ "pivot": [
+  12.0,
+  11.3
+ ],
+ "voxels": 3126,
+ "materials": [
+  "stone_dark",
+  "ore_gold",
+  "moss",
+  "moss_light"
+ ],
+ "lights": [],
+ "sockets": {}
+}

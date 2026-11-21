@@ -1,0 +1,49 @@
+{
+ "name": "workbench",
+ "size": [
+  36,
+  18
+ ],
+ "layers": 24,
+ "cols": 4,
+ "rows": 6,
+ "pivot": [
+  17.0,
+  8.5
+ ],
+ "voxels": 3728,
+ "materials": [
+  "wood_dark",
+  "wood",
+  "iron_dark",
+  "iron",
+  "copper",
+  "steel",
+  "heartwood",
+  "wood_light",
+  "cloth_blue",
+  "cloth_cream",
+  "brass",
+  "lamp",
+  "stone_dark",
+  "ore_copper",
+  "ore_gold"
+ ],
+ "lights": [
+  {
+   "pos": [
+    4.0,
+    4.5,
+    18.5
+   ],
+   "rgb": [
+    1.0,
+    0.78,
+    0.42
+   ],
+   "radius": 24,
+   "power": 1.0
+  }
+ ],
+ "sockets": {}
+}

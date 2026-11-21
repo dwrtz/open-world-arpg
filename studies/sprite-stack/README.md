@@ -11,6 +11,7 @@ python3 make.py sheet explorer       # slice sheets  -> out/slices/
 python3 stills.py                    # every still   -> out/renders/
 python3 reels.py showcase            # turntable reel -> out/renders/showcase.mp4
 python3 reels.py diorama             # side-view slab reel
+python3 compare.py                   # pixelate filter vs stack, same character (add `reel` for the video)
 python3 web.py                       # compact WebP copies + stats -> out/web/
 ```
 
@@ -46,6 +47,9 @@ renders; `out/renders/`, `out/frames/` and `out/preview/` are regenerated.
 - `assets/*.py` - one asset per module, each exposing `build(**params) -> Vox`.
 - `scenes.py`, `stills.py`, `reels.py`, `web.py` - the showcase dais, the side-view cave slab,
   and the still / animated renders made from them.
+- `compare.py` - the same character as a smooth model, pixelated in screen space (with and
+  without anti-aliasing) and as a stack. The filter versions share the stack's lighting; what
+  differs is whether the grid is cut from the picture or from the model.
 
 ## Authoring an asset
 

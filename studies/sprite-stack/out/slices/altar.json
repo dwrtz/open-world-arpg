@@ -1,0 +1,55 @@
+{
+ "name": "altar",
+ "size": [
+  30,
+  30
+ ],
+ "layers": 40,
+ "cols": 7,
+ "rows": 6,
+ "pivot": [
+  15.0,
+  15.0
+ ],
+ "voxels": 6128,
+ "materials": [
+  "opal_teal",
+  "opal_pink",
+  "opal_lilac",
+  "opal_white",
+  "opal_inlay",
+  "deepstone",
+  "slate"
+ ],
+ "lights": [
+  {
+   "pos": [
+    15.0,
+    15.0,
+    16.5
+   ],
+   "rgb": [
+    0.45,
+    0.95,
+    0.9
+   ],
+   "radius": 24,
+   "power": 0.55
+  },
+  {
+   "pos": [
+    15.0,
+    22.0,
+    31.0
+   ],
+   "rgb": [
+    1.0,
+    0.62,
+    0.86
+   ],
+   "radius": 28,
+   "power": 0.5
+  }
+ ],
+ "sockets": {}
+}
