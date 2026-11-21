@@ -3,6 +3,7 @@
 
   python make.py preview NAME [k=v ...]   four-angle lit preview -> out/preview/NAME.png
   python make.py sheet NAME               slice sheets -> out/slices/
+  python make.py sheets                   slice sheets for every asset
   python make.py list
 """
 import os
@@ -58,9 +59,23 @@ def preview(name, params=None, yaws=(35, 125, 215, 305), elev=36, scale=7, cell=
 
 def sheet(name, params=None):
     vox = assets.build(name, **(params or {}))
-    base = os.path.join(OUT, 'slices', vox.name)
+    stem = name + ''.join(f'_{v}' for v in (params or {}).values())
+    base = os.path.join(OUT, 'slices', stem)
     meta = vox.save_sheet(base)
-    print(f"{vox.name}: {meta['layers']} layers of {meta['size'][0]}x{meta['size'][1]} -> {base}.png")
+    print(f"{stem}: {meta['layers']} layers of {meta['size'][0]}x{meta['size'][1]} -> {base}.png")
+
+
+def sheets():
+    """Export every asset (and the explorer / ore variants) as slice sheets."""
+    for n in assets.names():
+        if n == 'explorer':
+            for o in ('prospector', 'warden', 'delver'):
+                sheet(n, {'outfit': o})
+        elif n == 'ore_rock':
+            for k in ('copper', 'gold', 'iron', 'ember'):
+                sheet(n, {'kind': k})
+        else:
+            sheet(n)
 
 
 if __name__ == '__main__':
@@ -71,5 +86,7 @@ if __name__ == '__main__':
         preview(sys.argv[2], _params(sys.argv[3:]))
     elif cmd == 'sheet':
         sheet(sys.argv[2], _params(sys.argv[3:]))
+    elif cmd == 'sheets':
+        sheets()
     else:
         print(__doc__)

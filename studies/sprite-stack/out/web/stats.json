@@ -1,0 +1,138 @@
+[
+ {
+  "label": "Opal Altar",
+  "w": 28,
+  "d": 28,
+  "layers": 38,
+  "voxels": 6128,
+  "sheet_kb": 116.4
+ },
+ {
+  "label": "Furnace",
+  "w": 29,
+  "d": 26,
+  "layers": 36,
+  "voxels": 10095,
+  "sheet_kb": 106.0
+ },
+ {
+  "label": "Moss Golem",
+  "w": 24,
+  "d": 26,
+  "layers": 38,
+  "voxels": 7005,
+  "sheet_kb": 92.6
+ },
+ {
+  "label": "Giant Root",
+  "w": 44,
+  "d": 24,
+  "layers": 36,
+  "voxels": 6412,
+  "sheet_kb": 148.5
+ },
+ {
+  "label": "Workbench",
+  "w": 36,
+  "d": 17,
+  "layers": 24,
+  "voxels": 3728,
+  "sheet_kb": 57.4
+ },
+ {
+  "label": "Prospector",
+  "w": 24,
+  "d": 18,
+  "layers": 30,
+  "voxels": 3272,
+  "sheet_kb": 50.6
+ },
+ {
+  "label": "Copper Ore",
+  "w": 23,
+  "d": 22,
+  "layers": 16,
+  "voxels": 3248,
+  "sheet_kb": 31.6
+ },
+ {
+  "label": "Anvil",
+  "w": 23,
+  "d": 18,
+  "layers": 19,
+  "voxels": 2449,
+  "sheet_kb": 30.7
+ },
+ {
+  "label": "Glowshrooms",
+  "w": 26,
+  "d": 23,
+  "layers": 26,
+  "voxels": 3491,
+  "sheet_kb": 60.7
+ },
+ {
+  "label": "Delver",
+  "w": 19,
+  "d": 19,
+  "layers": 30,
+  "voxels": 3154,
+  "sheet_kb": 42.3
+ },
+ {
+  "label": "Opal Cluster",
+  "w": 25,
+  "d": 24,
+  "layers": 29,
+  "voxels": 3719,
+  "sheet_kb": 68.0
+ },
+ {
+  "label": "Opal Scarab",
+  "w": 29,
+  "d": 24,
+  "layers": 18,
+  "voxels": 2647,
+  "sheet_kb": 48.9
+ },
+ {
+  "label": "Lantern",
+  "w": 11,
+  "d": 9,
+  "layers": 31,
+  "voxels": 641,
+  "sheet_kb": 12.0
+ },
+ {
+  "label": "Warden",
+  "w": 21,
+  "d": 19,
+  "layers": 34,
+  "voxels": 2965,
+  "sheet_kb": 53.0
+ },
+ {
+  "label": "Gold Ore",
+  "w": 23,
+  "d": 21,
+  "layers": 16,
+  "voxels": 3373,
+  "sheet_kb": 30.2
+ },
+ {
+  "label": "Minecart",
+  "w": 28,
+  "d": 18,
+  "layers": 20,
+  "voxels": 3221,
+  "sheet_kb": 39.4
+ },
+ {
+  "label": "Chest",
+  "w": 22,
+  "d": 14,
+  "layers": 18,
+  "voxels": 3166,
+  "sheet_kb": 21.7
+ }
+]
