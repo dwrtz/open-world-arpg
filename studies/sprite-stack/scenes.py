@@ -164,3 +164,32 @@ def set_dusk(sc, t):
         o.light_gain = 1.0 + 0.7 * t
     sc.emit_gain = 1.0 + 0.25 * t
     return sc
+
+
+# ---- generated worlds ---------------------------------------------------------------------
+def world_scene(world, vox=None, props=True):
+    """A generated cell grid as a slab stack, with the generator's prefab placements."""
+    import worldgen as wg
+    vox = vox or wg.to_vox(world)
+    sc = Scene()
+    sc.extent = 190
+    sc.bloom = 0.6
+    sc.key_frame = 'world'
+    sc.key_dir = (-0.35, 0.5, 0.8)
+    sc.key_rgb = (1.0, 0.95, 0.86)
+    sc.sky_rgb = (0.34, 0.44, 0.70)
+    sc.ground_rgb = (0.16, 0.14, 0.16)
+    sc.ambient = 0.40
+    sc.bg = dict(inner=(22, 40, 58), outer=(4, 7, 14), center=(0.5, 0.5), dots=True)
+    px, py = vox.pivot
+    sc.slab = sc.add(vox.bake(), (0, 0, 0))
+    sc.vox = vox
+    sc.origin = (px, py)
+    if props:
+        for (name, params, xv, yv, zv, yaw) in wg.placements(world, vox):
+            if have(name):
+                sc.add(baked(name, **params), (xv - px, yv - py, zv), yaw)
+    return sc
+
+
+WORLD_CAM = dict(elev=24.0, scale=4.25, look=(0, 0, 62))

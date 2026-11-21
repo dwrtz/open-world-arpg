@@ -204,7 +204,24 @@ def diorama_side():
     return diorama(name='diorama_side.png', yaw=0.0)
 
 
-ALL = dict(technique=technique, buffers=buffers, slices=slices, composable=composable, lineup=lineup,
+def worlds(seeds=(1, 2, 3, 4)):
+    """Four seeds through the same generator: every slab below is generated, none is authored."""
+    import worldgen as wg
+    W, H = 960, 540
+    img = canvas(W * 2, H * 2)
+    for i, seed in enumerate(seeds):
+        world = wg.generate(seed)
+        sc = scenes.world_scene(world)
+        c = dict(scenes.WORLD_CAM); c['scale'] *= W / 1280.0
+        tile = render(sc, Camera(-6.0, size=(W, H), **c), ss=3)
+        draw_text(tile, 24, H - 34, f'SEED {seed}', scale=3, align='left')
+        save(tile, f'panels/world_{i + 1}.png')
+        r, col = divmod(i, 2)
+        img[r * H:(r + 1) * H, col * W:(col + 1) * W] = tile
+    return save(img, 'worlds.png')
+
+
+ALL = dict(worlds=worlds, technique=technique, buffers=buffers, slices=slices, composable=composable, lineup=lineup,
            diorama=diorama, diorama_dark=diorama_dark, diorama_side=diorama_side)
 
 if __name__ == '__main__':

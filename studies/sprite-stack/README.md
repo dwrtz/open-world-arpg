@@ -12,6 +12,8 @@ python3 stills.py                    # every still   -> out/renders/
 python3 reels.py showcase            # turntable reel -> out/renders/showcase.mp4
 python3 reels.py diorama             # side-view slab reel
 python3 compare.py                   # pixelate filter vs stack, same character (add `reel` for the video)
+python3 stills.py worlds             # four generated worlds from four seeds
+python3 dig.py                       # tunnelling through a generated world -> out/web/dig.mp4
 python3 web.py                       # compact WebP copies + stats -> out/web/
 ```
 
@@ -47,6 +49,11 @@ renders; `out/renders/`, `out/frames/` and `out/preview/` are regenerated.
 - `assets/*.py` - one asset per module, each exposing `build(**params) -> Vox`.
 - `scenes.py`, `stills.py`, `reels.py`, `web.py` - the showcase dais, the side-view cave slab,
   and the still / animated renders made from them.
+- `worldgen.py` - a seed-driven generator that writes a 2D grid of material cells (strata, a
+  biome field, caverns, passages, deposits, a reachability check), `to_vox()` to give that grid
+  depth as a stack (one row of cells = `CELL` slices), and `dig()` to clear cells.
+- `dig.py` - an explorer tunnelling between two generated caverns: each bite edits the cell
+  grid and the stack is rebuilt from it. The pickaxe swing is a flipbook of small stacks.
 - `compare.py` - the same character as a smooth model, pixelated in screen space (with and
   without anti-aliasing) and as a stack. The filter versions share the stack's lighting; what
   differs is whether the grid is cut from the picture or from the model.
